@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 import styles from './JoinForm.module.scss';
 
-export const JoinForm = observer(function JoinForm() {
+export const JoinForm = observer(() => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [roomCode, setRoomCode] = useState('');

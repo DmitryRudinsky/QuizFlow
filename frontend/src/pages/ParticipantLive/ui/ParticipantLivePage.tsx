@@ -24,7 +24,7 @@ const mockQuestion = {
 
 type AnswerState = 'default' | 'selected' | 'submitted' | 'correct' | 'incorrect' | 'expired';
 
-export const ParticipantLivePage = observer(function ParticipantLivePage() {
+export const ParticipantLivePage = observer(() => {
     const { roomCode } = useParams();
     const { t } = useTranslation();
     const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);

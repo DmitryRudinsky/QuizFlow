@@ -14,7 +14,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import styles from './SignUpPage.module.scss';
 
-export const SignUpPage = observer(function SignUpPage() {
+export const SignUpPage = observer(() => {
     const { auth } = useStore();
     const { t } = useTranslation();
     const navigate = useNavigate();

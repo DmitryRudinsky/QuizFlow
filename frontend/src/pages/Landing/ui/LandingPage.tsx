@@ -8,7 +8,7 @@ import { Link } from 'react-router';
 
 import styles from './LandingPage.module.scss';
 
-export const LandingPage = observer(function LandingPage() {
+export const LandingPage = observer(() => {
     const { t } = useTranslation();
     return (
         <div className={styles.page}>

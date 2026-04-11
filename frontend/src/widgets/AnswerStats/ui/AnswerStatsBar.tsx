@@ -8,10 +8,7 @@ interface AnswerStatsBarProps {
     count: number;
 }
 
-export const AnswerStatsBar = observer(function AnswerStatsBar({
-    percentage,
-    count,
-}: AnswerStatsBarProps) {
+export const AnswerStatsBar = observer(({ percentage, count }: AnswerStatsBarProps) => {
     const { t } = useTranslation();
     return (
         <div className={styles.root}>

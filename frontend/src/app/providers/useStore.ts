@@ -3,6 +3,6 @@ import { useContext } from 'react';
 
 import { StoreContext } from './storeContext';
 
-export function useStore(): RootStore {
+export const useStore = (): RootStore => {
     return useContext(StoreContext);
-}
+};

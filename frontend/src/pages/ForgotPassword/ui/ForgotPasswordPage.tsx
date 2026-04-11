@@ -11,7 +11,7 @@ import { Link } from 'react-router';
 
 import styles from './ForgotPasswordPage.module.scss';
 
-export const ForgotPasswordPage = observer(function ForgotPasswordPage() {
+export const ForgotPasswordPage = observer(() => {
     const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);

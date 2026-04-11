@@ -23,9 +23,7 @@ interface ResultsLeaderboardProps {
     entries: LeaderboardEntry[];
 }
 
-export const ResultsLeaderboard = observer(function ResultsLeaderboard({
-    entries,
-}: ResultsLeaderboardProps) {
+export const ResultsLeaderboard = observer(({ entries }: ResultsLeaderboardProps) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
 

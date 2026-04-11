@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './ParticipantJoinPage.module.scss';
 
-export const ParticipantJoinPage = observer(function ParticipantJoinPage() {
+export const ParticipantJoinPage = observer(() => {
     const { t } = useTranslation();
     return (
         <div className={styles.page}>

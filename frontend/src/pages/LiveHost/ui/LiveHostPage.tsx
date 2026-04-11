@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import styles from './LiveHostPage.module.scss';
 
-export const LiveHostPage = observer(function LiveHostPage() {
+export const LiveHostPage = observer(() => {
     const navigate = useNavigate();
     const { id: quizId } = useParams();
     const { session } = useStore();

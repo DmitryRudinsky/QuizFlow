@@ -17,7 +17,7 @@ import { Link } from 'react-router';
 
 import styles from './OrganizerDashboard.module.scss';
 
-export const OrganizerDashboard = observer(function OrganizerDashboard() {
+export const OrganizerDashboard = observer(() => {
     const { quiz } = useStore();
     const { t } = useTranslation();
 

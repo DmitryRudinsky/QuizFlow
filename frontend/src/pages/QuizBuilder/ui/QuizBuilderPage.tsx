@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 
 import styles from './QuizBuilderPage.module.scss';
 
-export const QuizBuilderPage = observer(function QuizBuilderPage() {
+export const QuizBuilderPage = observer(() => {
     const { id: quizId } = useParams();
     const navigate = useNavigate();
     const { quizBuilder } = useStore();

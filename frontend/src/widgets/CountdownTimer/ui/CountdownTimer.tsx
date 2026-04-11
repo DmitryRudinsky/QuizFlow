@@ -10,33 +10,31 @@ interface CountdownTimerProps {
     size?: 'small' | 'medium' | 'large';
 }
 
-export const CountdownTimer = observer(function CountdownTimer({
-    timeLeft,
-    totalTime,
-    size = 'large',
-}: CountdownTimerProps) {
-    const { t } = useTranslation();
-    const percentage = (timeLeft / totalTime) * 100;
-    const isUrgent = percentage < 30;
-    const isWarning = percentage < 50 && percentage >= 30;
+export const CountdownTimer = observer(
+    ({ timeLeft, totalTime, size = 'large' }: CountdownTimerProps) => {
+        const { t } = useTranslation();
+        const percentage = (timeLeft / totalTime) * 100;
+        const isUrgent = percentage < 30;
+        const isWarning = percentage < 50 && percentage >= 30;
 
-    const stateClass = isUrgent
-        ? styles['circle--urgent']
-        : isWarning
-          ? styles['circle--warning']
-          : styles['circle--normal'];
+        const stateClass = isUrgent
+            ? styles['circle--urgent']
+            : isWarning
+              ? styles['circle--warning']
+              : styles['circle--normal'];
 
-    const sizeClass = styles[`circle--${size}`];
+        const sizeClass = styles[`circle--${size}`];
 
-    return (
-        <div className={styles.root} data-testid='countdown-timer'>
-            <div className={`${styles.circle} ${sizeClass} ${stateClass}`}>{timeLeft}</div>
-            {size === 'large' && (
-                <div className={styles.label}>
-                    <Clock />
-                    <span>{t('countdown.secondsLeft')}</span>
-                </div>
-            )}
-        </div>
-    );
-});
+        return (
+            <div className={styles.root} data-testid='countdown-timer'>
+                <div className={`${styles.circle} ${sizeClass} ${stateClass}`}>{timeLeft}</div>
+                {size === 'large' && (
+                    <div className={styles.label}>
+                        <Clock />
+                        <span>{t('countdown.secondsLeft')}</span>
+                    </div>
+                )}
+            </div>
+        );
+    },
+);

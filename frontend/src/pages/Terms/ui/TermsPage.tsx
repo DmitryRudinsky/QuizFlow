@@ -8,7 +8,7 @@ import { Link } from 'react-router';
 
 import styles from './TermsPage.module.scss';
 
-export const TermsPage = observer(function TermsPage() {
+export const TermsPage = observer(() => {
     const { t } = useTranslation();
 
     const sections = [

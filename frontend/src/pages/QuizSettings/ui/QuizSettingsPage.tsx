@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 
 import styles from './QuizSettingsPage.module.scss';
 
-export const QuizSettingsPage = observer(function QuizSettingsPage() {
+export const QuizSettingsPage = observer(() => {
     const navigate = useNavigate();
     const { id: quizId } = useParams();
     const { quizBuilder } = useStore();

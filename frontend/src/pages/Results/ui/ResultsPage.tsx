@@ -13,7 +13,7 @@ const mockLeaderboard = [
     { id: '8', name: 'Henry', score: 1050, correct: 11, total: 15, rank: 8 },
 ];
 
-export function ResultsPage() {
+export const ResultsPage = () => {
     return (
         <div className={styles.page}>
             <div className={styles.inner}>
@@ -21,4 +21,4 @@ export function ResultsPage() {
             </div>
         </div>
     );
-}
+};

@@ -45,7 +45,7 @@ const mockSessions = [
     },
 ];
 
-export const OrganizerAccountPage = observer(function OrganizerAccountPage() {
+export const OrganizerAccountPage = observer(() => {
     const { user } = useStore();
     const { t } = useTranslation();
     const currentUser = user.currentUser;

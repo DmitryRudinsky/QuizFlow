@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Button } from './Button';
 import styles from './LanguageSwitcher.module.scss';
 
-export const LanguageSwitcher = observer(function LanguageSwitcher() {
+export const LanguageSwitcher = observer(() => {
     const { locale, setLocale } = useTranslation();
     return (
         <Button

@@ -8,7 +8,7 @@ import { Link } from 'react-router';
 
 import styles from './PrivacyPage.module.scss';
 
-export const PrivacyPage = observer(function PrivacyPage() {
+export const PrivacyPage = observer(() => {
     const { t } = useTranslation();
 
     const sections = [

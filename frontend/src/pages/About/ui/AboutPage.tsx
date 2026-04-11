@@ -8,7 +8,7 @@ import { Link } from 'react-router';
 
 import styles from './AboutPage.module.scss';
 
-export const AboutPage = observer(function AboutPage() {
+export const AboutPage = observer(() => {
     const { t } = useTranslation();
 
     const features = [

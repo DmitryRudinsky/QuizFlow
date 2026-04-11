@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router';
 
 import styles from './OrganizerSidebar.module.scss';
 
-export const OrganizerSidebar = observer(function OrganizerSidebar() {
+export const OrganizerSidebar = observer(() => {
     const { auth } = useStore();
     const { t } = useTranslation();
     const location = useLocation();

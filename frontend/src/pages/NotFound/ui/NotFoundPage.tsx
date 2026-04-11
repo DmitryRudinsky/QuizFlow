@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 
 import styles from './NotFoundPage.module.scss';
 
-export const NotFoundPage = observer(function NotFoundPage() {
+export const NotFoundPage = observer(() => {
     const { t } = useTranslation();
     return (
         <div className={styles.page}>

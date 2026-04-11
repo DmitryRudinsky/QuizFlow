@@ -14,11 +14,7 @@ interface EmptyStateProps {
     actionLabel?: string;
 }
 
-export const EmptyState = observer(function EmptyState({
-    type,
-    action,
-    actionLabel,
-}: EmptyStateProps) {
+export const EmptyState = observer(({ type, action, actionLabel }: EmptyStateProps) => {
     const { t } = useTranslation();
 
     const configs = {
@@ -60,7 +56,7 @@ interface ErrorStateProps {
     onRetry?: () => void;
 }
 
-export const ErrorState = observer(function ErrorState({ type, onRetry }: ErrorStateProps) {
+export const ErrorState = observer(({ type, onRetry }: ErrorStateProps) => {
     const { t } = useTranslation();
 
     const configs = {
@@ -110,7 +106,7 @@ interface SuccessStateProps {
     description: string;
 }
 
-export function SuccessState({ title, description }: SuccessStateProps) {
+export const SuccessState = ({ title, description }: SuccessStateProps) => {
     return (
         <Card className={styles.successCard}>
             <CardContent className={styles.successCardContent}>
@@ -120,9 +116,9 @@ export function SuccessState({ title, description }: SuccessStateProps) {
             </CardContent>
         </Card>
     );
-}
+};
 
-export const NetworkStatus = observer(function NetworkStatus({ isOnline }: { isOnline: boolean }) {
+export const NetworkStatus = observer(({ isOnline }: { isOnline: boolean }) => {
     const { t } = useTranslation();
 
     if (isOnline) {

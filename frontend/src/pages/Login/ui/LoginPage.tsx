@@ -13,7 +13,7 @@ import { Link, useNavigate } from 'react-router';
 
 import styles from './LoginPage.module.scss';
 
-export const LoginPage = observer(function LoginPage() {
+export const LoginPage = observer(() => {
     const { auth } = useStore();
     const { t } = useTranslation();
     const navigate = useNavigate();

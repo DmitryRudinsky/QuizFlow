@@ -53,7 +53,7 @@ const mockHistory = [
     },
 ];
 
-export const ParticipantAccountPage = observer(function ParticipantAccountPage() {
+export const ParticipantAccountPage = observer(() => {
     const { user, auth } = useStore();
     const { t } = useTranslation();
     const currentUser = user.currentUser;
