@@ -1,0 +1,162 @@
+.page {
+    min-height: 100vh;
+    background-color: var(--background);
+}
+
+.header {
+    border-bottom: 1px solid var(--border);
+    background-color: var(--card);
+}
+
+.headerInner {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.headerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.headerTitle {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.logoutButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: var(--foreground);
+    }
+}
+
+.body {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+
+    & > * + * {
+        margin-top: 2rem;
+    }
+}
+
+.profileCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, var(--teal), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatarInitial {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.profileName {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.profileEmail {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.roleBadge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background-color: color-mix(in srgb, var(--teal) 10%, transparent);
+    color: var(--teal);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.statsGrid {
+    display: grid;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.statValue {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.rankBadgeTop {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    background-color: color-mix(in srgb, var(--success) 10%, transparent);
+    color: var(--success);
+}
+
+.rankBadgeNormal {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+}
+
+.scoreMain {
+    font-weight: var(--font-weight-medium);
+}
+
+.scorePercent {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.cardContentPadded {
+    padding-top: 1.5rem;
+}
+
+.cellBold {
+    font-weight: var(--font-weight-medium);
+}
+
+.cellMuted {
+    color: var(--muted-foreground);
+}

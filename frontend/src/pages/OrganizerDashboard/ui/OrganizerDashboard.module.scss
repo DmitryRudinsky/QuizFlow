@@ -1,0 +1,133 @@
+.layout {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background);
+}
+
+.main {
+    flex: 1;
+    overflow: auto;
+}
+
+.body {
+    padding: 2rem;
+
+    & > * + * {
+        margin-top: 2rem;
+    }
+}
+
+.topRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topSubtitle {
+    color: var(--muted-foreground);
+}
+
+.statsGrid {
+    display: grid;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+// Stat card inner
+.statInner {
+    & > * + * {
+        margin-top: 0.5rem;
+    }
+}
+
+.statTitle {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.statValue {
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.statChangePrimary {
+    font-size: 0.75rem;
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    display: inline-block;
+    padding: 0 0.25rem;
+    border-radius: 2px;
+}
+
+.statChangeTeal {
+    font-size: 0.75rem;
+    background-color: color-mix(in srgb, var(--teal) 10%, transparent);
+    color: var(--teal);
+    display: inline-block;
+    padding: 0 0.25rem;
+    border-radius: 2px;
+}
+
+.statChangeSuccess {
+    font-size: 0.75rem;
+    background-color: color-mix(in srgb, var(--success) 10%, transparent);
+    color: var(--success);
+    display: inline-block;
+    padding: 0 0.25rem;
+    border-radius: 2px;
+}
+
+.statChangePink {
+    font-size: 0.75rem;
+    background-color: color-mix(in srgb, var(--pink) 10%, transparent);
+    color: var(--pink);
+    display: inline-block;
+    padding: 0 0.25rem;
+    border-radius: 2px;
+}
+
+// Table badges
+.statusBadgeActive {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    background-color: color-mix(in srgb, var(--success) 10%, transparent);
+    color: var(--success);
+}
+
+.statusBadgeDraft {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+}
+
+.cardContentPadded {
+    padding-top: 1.5rem;
+}
+
+.cellBold {
+    font-weight: var(--font-weight-medium);
+}
+
+.cellMuted {
+    color: var(--muted-foreground);
+}
+
+.colNarrow {
+    width: 3rem;
+}
+
+.itemDestructive {
+    color: var(--destructive);
+}

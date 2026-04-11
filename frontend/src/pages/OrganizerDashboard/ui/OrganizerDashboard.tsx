@@ -1,0 +1,198 @@
+import { useStore } from '@app/providers/StoreProvider';
+import { ROUTES } from '@shared/config/routes';
+import { useTranslation } from '@shared/lib/useTranslation';
+import { Button } from '@shared/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/ui/Card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@shared/ui/DropdownMenu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/ui/Table';
+import { OrganizerSidebar } from '@widgets/OrganizerSidebar/ui/OrganizerSidebar';
+import { Edit, MoreVertical, Play, Plus, Trash2 } from 'lucide-react';
+import { observer } from 'mobx-react-lite';
+import { Link } from 'react-router';
+
+import styles from './OrganizerDashboard.module.scss';
+
+export const OrganizerDashboard = observer(function OrganizerDashboard() {
+    const { quiz } = useStore();
+    const { t } = useTranslation();
+
+    const mockMeta = [
+        { id: '1', questions: 15, participants: 42, lastUsed: '2 hours ago', status: 'active' },
+        { id: '2', questions: 20, participants: 38, lastUsed: '1 day ago', status: 'active' },
+        { id: '3', questions: 12, participants: 29, lastUsed: '3 days ago', status: 'draft' },
+        { id: '4', questions: 18, participants: 55, lastUsed: '5 days ago', status: 'active' },
+    ];
+
+    const metaByQuizId = Object.fromEntries(mockMeta.map((m) => [m.id, m]));
+
+    return (
+        <div className={styles.layout}>
+            <OrganizerSidebar />
+
+            <main className={styles.main}>
+                <div className={styles.body}>
+                    <div className={styles.topRow}>
+                        <div>
+                            <h1>{t('dashboard.title')}</h1>
+                            <p className={styles.topSubtitle}>{t('dashboard.subtitle')}</p>
+                        </div>
+                        <Link to={ROUTES.ORGANIZER_QUIZ_NEW}>
+                            <Button>
+                                <Plus />
+                                {t('dashboard.createNew')}
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <div className={styles.statsGrid}>
+                        <StatCard
+                            title={t('dashboard.totalQuizzes')}
+                            value='24'
+                            change={t('dashboard.thisWeek')}
+                            colorClass={styles.statChangePrimary}
+                        />
+                        <StatCard
+                            title={t('dashboard.totalParticipants')}
+                            value='1,284'
+                            change={t('dashboard.vsLastWeek')}
+                            colorClass={styles.statChangeTeal}
+                        />
+                        <StatCard
+                            title={t('dashboard.activeSessions')}
+                            value='3'
+                            change={t('dashboard.liveNow')}
+                            colorClass={styles.statChangeSuccess}
+                        />
+                        <StatCard
+                            title={t('dashboard.avgCompletion')}
+                            value='87%'
+                            change={t('dashboard.improvement')}
+                            colorClass={styles.statChangePink}
+                        />
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('dashboard.recentQuizzes')}</CardTitle>
+                            <CardDescription>{t('dashboard.recentSubtitle')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t('dashboard.colTitle')}</TableHead>
+                                        <TableHead>{t('dashboard.colQuestions')}</TableHead>
+                                        <TableHead>{t('dashboard.colParticipants')}</TableHead>
+                                        <TableHead>{t('dashboard.colLastUsed')}</TableHead>
+                                        <TableHead>{t('dashboard.colStatus')}</TableHead>
+                                        <TableHead className={styles.colNarrow}></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {quiz.quizList.map((q) => {
+                                        const meta = metaByQuizId[q.id];
+                                        if (!meta) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableRow key={q.id}>
+                                                <TableCell className={styles.cellBold}>
+                                                    {q.title}
+                                                </TableCell>
+                                                <TableCell>{meta.questions}</TableCell>
+                                                <TableCell>{meta.participants}</TableCell>
+                                                <TableCell className={styles.cellMuted}>
+                                                    {meta.lastUsed}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span
+                                                        className={
+                                                            meta.status === 'active'
+                                                                ? styles.statusBadgeActive
+                                                                : styles.statusBadgeDraft
+                                                        }
+                                                    >
+                                                        {meta.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant='ghost' size='icon'>
+                                                                <MoreVertical />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align='end'>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link
+                                                                    to={ROUTES.ORGANIZER_QUIZ_LIVE(
+                                                                        q.id,
+                                                                    )}
+                                                                >
+                                                                    <Play />
+                                                                    {t('dashboard.startQuiz')}
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link
+                                                                    to={ROUTES.ORGANIZER_QUIZ_EDIT(
+                                                                        q.id,
+                                                                    )}
+                                                                >
+                                                                    <Edit />
+                                                                    {t('common.edit')}
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className={styles.itemDestructive}
+                                                                onClick={() =>
+                                                                    quiz.deleteQuiz(q.id)
+                                                                }
+                                                            >
+                                                                <Trash2 />
+                                                                {t('common.delete')}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
+        </div>
+    );
+});
+
+function StatCard({
+    title,
+    value,
+    change,
+    colorClass,
+}: {
+    title: string;
+    value: string;
+    change: string;
+    colorClass: string;
+}) {
+    return (
+        <Card>
+            <CardContent className={styles.cardContentPadded}>
+                <div className={styles.statInner}>
+                    <p className={styles.statTitle}>{title}</p>
+                    <p className={styles.statValue}>{value}</p>
+                    <p className={colorClass}>{change}</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}

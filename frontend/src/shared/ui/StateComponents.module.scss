@@ -1,0 +1,125 @@
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Empty + Error state card content
+.cardContent {
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.icon {
+    display: block;
+    margin: 0 auto 1rem;
+    width: 3rem;
+    height: 3rem;
+}
+
+.iconDestructive {
+    color: var(--destructive);
+}
+
+.iconWarning {
+    color: var(--warning);
+}
+
+.iconMuted {
+    color: var(--muted-foreground);
+    opacity: 0.5;
+}
+
+.title {
+    margin-bottom: 0.5rem;
+}
+
+.description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 1rem;
+}
+
+// Error card border
+.errorCard {
+    border: 2px solid color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+// Success card
+.successCard {
+    border: 2px solid color-mix(in srgb, var(--success) 20%, transparent);
+    background: color-mix(in srgb, var(--success) 5%, transparent);
+}
+
+.successCardContent {
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.successIcon {
+    display: block;
+    margin: 0 auto 1rem;
+    width: 3rem;
+    height: 3rem;
+    color: var(--success);
+}
+
+.successTitle {
+    margin-bottom: 0.5rem;
+    color: var(--success);
+}
+
+.successDescription {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+// Reconnecting spinner row
+.reconnecting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.reconnectingSpinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    flex-shrink: 0;
+}
+
+// Network status toast
+.networkCard {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
+    border: 1px solid var(--warning);
+    background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+
+.networkCardContent {
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.networkIcon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--warning);
+    flex-shrink: 0;
+}
+
+.networkText {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--warning);
+}

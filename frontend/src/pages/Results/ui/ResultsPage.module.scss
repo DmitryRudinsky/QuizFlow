@@ -1,0 +1,19 @@
+.page {
+    min-height: 100vh;
+    background: linear-gradient(
+        to bottom right,
+        color-mix(in srgb, var(--primary) 10%, transparent),
+        var(--background),
+        color-mix(in srgb, var(--teal) 10%, transparent)
+    );
+    padding: 1rem;
+
+    @media (min-width: 768px) {
+        padding: 2rem;
+    }
+}
+
+.inner {
+    max-width: 56rem;
+    margin: 0 auto;
+}

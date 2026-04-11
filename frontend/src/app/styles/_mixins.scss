@@ -1,0 +1,52 @@
+@use 'variables' as *;
+
+// Responsive breakpoints
+@mixin sm {
+    @media (min-width: #{$breakpoint-sm}) {
+        @content;
+    }
+}
+
+@mixin md {
+    @media (min-width: #{$breakpoint-md}) {
+        @content;
+    }
+}
+
+@mixin lg {
+    @media (min-width: #{$breakpoint-lg}) {
+        @content;
+    }
+}
+
+@mixin xl {
+    @media (min-width: #{$breakpoint-xl}) {
+        @content;
+    }
+}
+
+// Flex helpers
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+// Card style
+@mixin card {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: $radius-lg;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+// Transition
+@mixin transition($props: all, $duration: 0.15s) {
+    transition: $props $duration ease;
+}

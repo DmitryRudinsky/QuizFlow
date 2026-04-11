@@ -1,0 +1,245 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.trophyIcon {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-teal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.trophyIconSvg {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: white;
+}
+
+.rankBadgeTrophy {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: white;
+}
+
+.rankBadgeMedal {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: white;
+}
+
+.arrowIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    max-width: 48rem;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.podiumCard {
+    &--second {
+        margin-top: 2rem;
+    }
+    &--third {
+        margin-top: 3rem;
+    }
+}
+
+.rankBadge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    font-weight: 700;
+    color: white;
+
+    &--first {
+        width: 5rem;
+        height: 5rem;
+        background: linear-gradient(135deg, #facc15, #eab308);
+        box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
+    }
+
+    &--second {
+        width: 4rem;
+        height: 4rem;
+        background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    }
+
+    &--third {
+        width: 3.5rem;
+        height: 3.5rem;
+        background: linear-gradient(135deg, #fb923c, #f97316);
+    }
+}
+
+.leaderboardRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-radius: 0.5rem;
+
+    &--top3 {
+        background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+    }
+
+    &--rest {
+        background-color: var(--color-muted);
+    }
+}
+
+.rankCircle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+
+    &--gold {
+        background: linear-gradient(135deg, #facc15, #eab308);
+        color: white;
+    }
+
+    &--silver {
+        background: linear-gradient(135deg, #d1d5db, #9ca3af);
+        color: white;
+    }
+
+    &--bronze {
+        background: linear-gradient(135deg, #fb923c, #f97316);
+        color: white;
+    }
+
+    &--default {
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+    }
+}
+
+.headerTitle {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.headerSubtitle {
+    font-size: 1.125rem;
+    color: var(--color-muted-foreground);
+}
+
+.firstPlaceCard {
+    border: 2px solid var(--color-primary);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-primary) 5%, transparent),
+        color-mix(in srgb, var(--color-teal) 5%, transparent)
+    );
+}
+
+.podiumCardInner {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.rankLabel {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+
+    &--first {
+        font-size: 2.5rem;
+    }
+}
+
+.participantName {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+
+    &--large {
+        font-size: 1.125rem;
+    }
+}
+
+.participantScore {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+
+    &--large {
+        font-size: 1.5rem;
+    }
+}
+
+.participantCorrect {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin-top: 0.25rem;
+}
+
+.leaderboardBody {
+    padding: 1.5rem;
+}
+
+.leaderboardTitle {
+    margin-bottom: 1rem;
+}
+
+.leaderboardEntries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.leaderboardEntryLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.entryName {
+    font-weight: 600;
+}
+
+.entryCorrect {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+}
+
+.entryScore {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}

@@ -1,0 +1,68 @@
+@use '../../../app/styles/variables' as *;
+
+.root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border-width: 4px;
+    border-style: solid;
+    font-weight: 700;
+    transition: all 0.3s ease;
+
+    &--small {
+        width: 3rem;
+        height: 3rem;
+        font-size: 0.875rem;
+    }
+
+    &--medium {
+        width: 4rem;
+        height: 4rem;
+        font-size: 1.125rem;
+    }
+
+    &--large {
+        width: 6rem;
+        height: 6rem;
+        font-size: 1.875rem;
+    }
+
+    &--normal {
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+        background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    }
+
+    &--warning {
+        color: var(--color-warning);
+        border-color: var(--color-warning);
+        background-color: color-mix(in srgb, var(--color-warning) 10%, transparent);
+    }
+
+    &--urgent {
+        color: var(--color-destructive);
+        border-color: var(--color-destructive);
+        background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+    }
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+}

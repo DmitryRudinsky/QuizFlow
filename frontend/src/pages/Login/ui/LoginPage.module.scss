@@ -1,0 +1,95 @@
+.page {
+    min-height: 100vh;
+    background-color: var(--background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 28rem;
+
+    & > * + * {
+        margin-top: 1.5rem;
+    }
+}
+
+.logoRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.logoIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--primary-foreground);
+    }
+}
+
+.langSwitcher {
+    margin-left: auto;
+}
+
+.logoName {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.form {
+    & > * + * {
+        margin-top: 1rem;
+    }
+}
+
+.fieldGroup {
+    & > * + * {
+        margin-top: 0.5rem;
+    }
+}
+
+.passwordLabelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.forgotLink {
+    font-size: 0.875rem;
+    color: var(--primary);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.fullWidthButton {
+    width: 100%;
+}
+
+.footerText {
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--muted-foreground);
+}
+
+.signUpLink {
+    color: var(--primary);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

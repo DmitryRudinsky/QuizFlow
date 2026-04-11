@@ -1,0 +1,135 @@
+.page {
+    min-height: 100vh;
+    background-color: var(--background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 28rem;
+
+    & > * + * {
+        margin-top: 1.5rem;
+    }
+}
+
+.logoRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.logoIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--primary-foreground);
+    }
+}
+
+.langSwitcher {
+    margin-left: auto;
+}
+
+.logoName {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.form {
+    & > * + * {
+        margin-top: 1rem;
+    }
+}
+
+.roleSection {
+    & > * + * {
+        margin-top: 0.75rem;
+    }
+}
+
+.roleGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.roleButton {
+    padding: 1rem;
+    border-radius: calc(var(--radius) - 2px);
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+
+    &:hover {
+        border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+    }
+}
+
+.roleButtonActive {
+    border-color: var(--primary);
+    background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.roleIcon {
+    display: block;
+    margin: 0 auto 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.roleIconOrganizer {
+    color: var(--primary);
+}
+.roleIconParticipant {
+    color: var(--teal);
+}
+
+.roleLabel {
+    font-weight: var(--font-weight-medium);
+}
+
+.roleHint {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
+}
+
+.fieldGroup {
+    & > * + * {
+        margin-top: 0.5rem;
+    }
+}
+
+.fullWidthButton {
+    width: 100%;
+}
+
+.footerText {
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--muted-foreground);
+}
+
+.loginLink {
+    color: var(--primary);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

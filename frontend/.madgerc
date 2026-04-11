@@ -1,0 +1,14 @@
+{
+    "tsConfig": "tsconfig.json",
+    "includeNpm": false,
+    "fileExtensions": ["ts", "tsx"],
+    "excludeRegExp": [".*\\.scss$", ".*\\.css$"],
+    "detectiveOptions": {
+        "ts": {
+            "skipTypeImports": true
+        },
+        "tsx": {
+            "skipTypeImports": true
+        }
+    }
+}

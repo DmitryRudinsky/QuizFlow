@@ -1,0 +1,97 @@
+.layout {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background);
+}
+
+.main {
+    flex: 1;
+    overflow: auto;
+}
+
+.body {
+    padding: 2rem;
+
+    & > * + * {
+        margin-top: 2rem;
+    }
+}
+
+.pageSubtitle {
+    color: var(--muted-foreground);
+}
+
+.profileRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, var(--primary), var(--teal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatarInitial {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.profileName {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.profileEmail {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.roleBadge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.statsGrid {
+    display: grid;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.statValue {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.cardContentPadded {
+    padding-top: 1.5rem;
+}
+
+.cellBold {
+    font-weight: var(--font-weight-medium);
+}
+
+.cellMuted {
+    color: var(--muted-foreground);
+}

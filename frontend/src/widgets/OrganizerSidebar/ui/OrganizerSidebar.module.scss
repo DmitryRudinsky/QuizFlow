@@ -1,0 +1,90 @@
+.sidebar {
+    width: 16rem;
+    border-right: 1px solid var(--color-sidebar-border);
+    background-color: var(--color-sidebar);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    height: 100vh;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+}
+
+.logoIcon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoQ {
+    color: var(--color-primary-foreground);
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.logoText {
+    font-weight: 600;
+    color: var(--color-sidebar-foreground);
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.navItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.875rem;
+    color: var(--color-sidebar-foreground);
+    transition: background-color 0.15s;
+
+    svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    &:hover {
+        background-color: var(--color-sidebar-accent);
+    }
+
+    &--active {
+        background-color: var(--color-sidebar-primary);
+        color: var(--color-sidebar-primary-foreground);
+
+        &:hover {
+            background-color: var(--color-sidebar-primary);
+        }
+    }
+}
+
+.languageSwitcherRow {
+    margin-bottom: 0.5rem;
+}
+
+.footer {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+}

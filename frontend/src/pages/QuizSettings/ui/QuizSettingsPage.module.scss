@@ -1,0 +1,104 @@
+.page {
+    min-height: 100vh;
+    background-color: var(--background);
+}
+
+.header {
+    border-bottom: 1px solid var(--border);
+    background-color: var(--card);
+}
+
+.headerInner {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.headerSubtitle {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.body {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    max-width: 48rem;
+
+    & > * + * {
+        margin-top: 1.5rem;
+    }
+}
+
+.settingGroup {
+    & > * + * {
+        margin-top: 0.5rem;
+    }
+}
+
+.settingGroup + .settingGroup,
+.settingGroup + .toggleRow,
+.toggleRow + .settingGroup,
+.toggleRow + .toggleRow {
+    margin-top: 1.5rem;
+}
+
+.settingHint {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+// Toggle row
+.toggleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggleInfo {
+    & > * + * {
+        margin-top: 0.125rem;
+    }
+}
+
+.toggleHint {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+// Room code box
+.roomCodeBox {
+    padding: 1rem;
+    background-color: var(--muted);
+    border-radius: calc(var(--radius) - 2px);
+}
+
+.roomCodeRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.roomCode {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 0.25rem;
+}
+
+.roomCodeHint {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
+}
