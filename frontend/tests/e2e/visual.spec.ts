@@ -87,19 +87,17 @@ test.describe('Visual regression — participant pages', () => {
     test('participant-live', async ({ page }) => {
         await page.goto('/quiz/ABC-123/live');
         await disableAnimations(page);
-        // Mask the countdown timer — its value decrements every second
-        await expect(page).toHaveScreenshot('participant-live.png', {
-            mask: [page.locator('[data-testid="countdown-timer"]')],
+        await page.addStyleTag({
+            content: '[data-testid="countdown-timer"] { visibility: hidden; }',
         });
+        await expect(page).toHaveScreenshot('participant-live.png');
     });
 
     test('results', async ({ page }) => {
         await page.goto('/quiz/ABC-123/results');
         await disableAnimations(page);
-        // canvas-confetti draws on a <canvas> via requestAnimationFrame — mask it
-        await expect(page).toHaveScreenshot('results.png', {
-            mask: [page.locator('canvas')],
-        });
+        await page.evaluate(() => document.querySelectorAll('canvas').forEach((c) => c.remove()));
+        await expect(page).toHaveScreenshot('results.png');
     });
 
     test('participant-account', async ({ page }) => {
@@ -137,10 +135,10 @@ test.describe('Visual regression — organizer pages', () => {
     test('live-host', async ({ page }) => {
         await page.goto('/organizer/quiz/1/live');
         await disableAnimations(page);
-        // Mask the countdown timer — its value decrements every second
-        await expect(page).toHaveScreenshot('live-host.png', {
-            mask: [page.locator('[data-testid="countdown-timer"]')],
+        await page.addStyleTag({
+            content: '[data-testid="countdown-timer"] { visibility: hidden; }',
         });
+        await expect(page).toHaveScreenshot('live-host.png');
     });
 
     test('organizer-account', async ({ page }) => {
