@@ -3,3 +3,8 @@
 /**/dist
 /**/coverage
 /**/test-results
+.env
+
+# Backend
+backend/build/
+backend/.gradle/
