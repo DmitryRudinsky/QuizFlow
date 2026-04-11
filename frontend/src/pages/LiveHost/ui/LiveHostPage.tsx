@@ -1,4 +1,4 @@
-import { useStore } from '@app/providers/StoreProvider';
+import { useStore } from '@app/providers/useStore';
 import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';

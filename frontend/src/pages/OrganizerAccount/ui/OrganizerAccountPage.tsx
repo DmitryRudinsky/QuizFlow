@@ -1,4 +1,4 @@
-import { useStore } from '@app/providers/StoreProvider';
+import { useStore } from '@app/providers/useStore';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/ui/Table';
