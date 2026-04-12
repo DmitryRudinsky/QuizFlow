@@ -3,18 +3,16 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/quizflow}
-    username: ${DB_USER:quizflow}
-    password: ${DB_PASSWORD:your_password_here}
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:quizflow}
+    username: ${POSTGRES_USER:quizflow}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: validate   # Hibernate только проверяет схему, не меняет её сам
+    open-in-view: false    # не держать соединение с БД открытым во время рендеринга ответа
     show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
     enabled: true

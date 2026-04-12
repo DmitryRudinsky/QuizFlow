@@ -8,3 +8,5 @@
 # Backend
 backend/build/
 backend/.gradle/
+backend/server/build/
+backend/api/build
