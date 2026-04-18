@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.MapsId
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @Entity
@@ -27,6 +29,7 @@ class QuizSettings(
     var timePerQuestion: Int = 30,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "scoring_mode", nullable = false, columnDefinition = "scoring_mode")
     var scoringMode: ScoringMode = ScoringMode.standard,
 
@@ -37,6 +40,7 @@ class QuizSettings(
     var randomizeQuestions: Boolean = false,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "show_correct_answers", nullable = false, columnDefinition = "show_answers")
     var showCorrectAnswers: ShowAnswers = ShowAnswers.after_each,
 )

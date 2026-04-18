@@ -68,7 +68,7 @@ class SessionService(
         }
 
         if (userId != null) {
-            val existing = sessionParticipantRepository.findBySessionIdAndUserId(session.id, userId)
+            val existing = sessionParticipantRepository.findBySessionIdAndUserId(session.id!!, userId)
             if (existing != null) {
                 throw AlreadyJoinedException()
             }
@@ -159,7 +159,7 @@ class SessionService(
 
     fun getLeaderboard(roomCode: String): List<SessionParticipant> {
         val session = getSessionByRoomCode(roomCode)
-        return sessionParticipantRepository.findBySessionId(session.id)
+        return sessionParticipantRepository.findBySessionId(session.id!!)
             .sortedByDescending { it.score }
     }
 

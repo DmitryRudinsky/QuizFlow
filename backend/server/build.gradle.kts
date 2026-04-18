@@ -37,6 +37,9 @@ dependencies {
     // BCrypt для хеширования паролей (входит в Spring Security Crypto)
     implementation("org.springframework.security:spring-security-crypto")
 
+    // Swagger UI + OpenAPI документация
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+
     // Тесты
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

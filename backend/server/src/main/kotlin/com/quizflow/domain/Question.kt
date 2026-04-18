@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @Entity
@@ -20,13 +22,14 @@ import java.util.UUID
 class Question(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
     val quiz: Quiz,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "question_type")
     var type: QuestionType = QuestionType.text,
 
@@ -37,6 +40,7 @@ class Question(
     var imageUrl: String? = null,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "answer_type", nullable = false, columnDefinition = "answer_type")
     var answerType: AnswerType = AnswerType.single,
 

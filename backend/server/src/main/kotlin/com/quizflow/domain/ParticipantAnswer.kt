@@ -19,7 +19,7 @@ import java.util.UUID
 class ParticipantAnswer(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant_id", nullable = false)
@@ -36,7 +36,6 @@ class ParticipantAnswer(
     @Column(name = "is_correct", nullable = false)
     val isCorrect: Boolean,
 
-    // Вычисляется на сервере в момент приёма ответа
     @Column(name = "points_earned", nullable = false)
     val pointsEarned: Int = 0,
 

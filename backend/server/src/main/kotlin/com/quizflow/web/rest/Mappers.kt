@@ -20,34 +20,34 @@ import com.quizflow.domain.SessionParticipant
 import com.quizflow.domain.User
 
 fun User.toResponse() = UserResponse(
-    id = id,
+    id = id!!,
     name = name,
     email = email,
     role = UserRoleDto.valueOf(role.name),
 )
 
 fun Quiz.toResponse() = QuizResponse(
-    id = id,
+    id = id!!,
     title = title,
     description = description,
     category = category,
-    createdBy = createdBy.id,
+    createdBy = createdBy.id!!,
     questionCount = questions.size,
     createdAt = createdAt,
 )
 
 fun Quiz.toDetailResponse() = QuizDetailResponse(
-    id = id,
+    id = id!!,
     title = title,
     description = description,
     category = category,
-    createdBy = createdBy.id,
+    createdBy = createdBy.id!!,
     questions = questions.map { it.toResponse() },
     createdAt = createdAt,
 )
 
 fun Question.toResponse() = QuestionResponse(
-    id = id,
+    id = id!!,
     questionText = questionText,
     type = QuestionTypeDto.valueOf(type.name),
     answerType = AnswerTypeDto.valueOf(answerType.name),
@@ -58,29 +58,29 @@ fun Question.toResponse() = QuestionResponse(
 )
 
 fun Answer.toResponse() = AnswerResponse(
-    id = id,
+    id = id!!,
     text = text,
 )
 
 fun Session.toResponse() = SessionResponse(
-    id = id,
+    id = id!!,
     roomCode = roomCode,
-    quizId = quiz.id,
-    hostId = host.id,
+    quizId = quiz.id!!,
+    hostId = host.id!!,
     status = SessionStatusDto.valueOf(status.name),
     currentQuestionIndex = currentQuestionIndex,
 )
 
 fun SessionParticipant.toJoinResponse() = JoinSessionResponse(
-    participantId = id,
+    participantId = id!!,
     nickname = nickname,
-    sessionId = session.id,
+    sessionId = session.id!!,
     roomCode = session.roomCode,
 )
 
 fun List<SessionParticipant>.toLeaderboard() = mapIndexed { index, participant ->
     LeaderboardEntryResponse(
-        participantId = participant.id,
+        participantId = participant.id!!,
         nickname = participant.nickname,
         score = participant.score,
         rank = index + 1,

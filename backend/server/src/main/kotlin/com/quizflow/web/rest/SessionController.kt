@@ -63,7 +63,7 @@ class SessionController(
         val answer = sessionService.submitAnswer(request.participantId, request.questionId, request.answerIds)
         val question = sessionService.getSessionByRoomCode(roomCode).quiz.questions
             .find { it.id == request.questionId }!!
-        val correctAnswerIds = question.answers.filter { it.isCorrect }.map { it.id }
+        val correctAnswerIds = question.answers.filter { it.isCorrect }.map { it.id!! }
 
         return AnswerResultResponse(
             isCorrect = answer.isCorrect,

@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.Instant
 import java.util.UUID
 
@@ -21,7 +23,7 @@ import java.util.UUID
 class Session(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 
     @Column(name = "room_code", nullable = false, unique = true)
     val roomCode: String,
@@ -35,6 +37,7 @@ class Session(
     val host: User,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "session_status")
     var status: SessionStatus = SessionStatus.waiting,
 
