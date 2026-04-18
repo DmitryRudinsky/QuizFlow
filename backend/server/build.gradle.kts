@@ -34,6 +34,9 @@ dependencies {
     // Kotlin: reflection для Spring
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    // BCrypt для хеширования паролей (входит в Spring Security Crypto)
+    implementation("org.springframework.security:spring-security-crypto")
+
     // Тесты
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
