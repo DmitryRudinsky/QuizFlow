@@ -12,7 +12,7 @@ export class RootStore {
     session: SessionStore;
 
     constructor() {
-        this.quiz = new QuizStore();
+        this.quiz = new QuizStore(this);
         this.user = new UserStore();
         this.auth = new AuthStore(this);
         this.quizBuilder = new QuizBuilderStore(this);

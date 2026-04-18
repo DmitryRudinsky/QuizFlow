@@ -20,24 +20,44 @@ export const LiveHostPage = observer(() => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        session.startTimer();
-        return () => session.stopTimer();
-    }, [session]);
+        const init = async () => {
+            if (quizId && !session.roomCode) {
+                await session.createSession(quizId);
+                await session.startSession();
+            }
+        };
+        void init();
+        return () => {
+            session.stopTimer();
+        };
+    }, [quizId, session]);
 
-    const handleNextQuestion = () => {
+    const handleNextQuestion = async () => {
         if (!session.isLastQuestion) {
-            session.nextQuestion();
+            await session.nextQuestion();
         } else {
-            navigate(ROUTES.PARTICIPANT_RESULTS(quizId || 'ABC-123'));
+            const roomCode = session.roomCode ?? quizId ?? '';
+            navigate(ROUTES.PARTICIPANT_RESULTS(roomCode));
         }
     };
 
-    const handleEndQuiz = () => {
-        session.endSession();
-        navigate(ROUTES.PARTICIPANT_RESULTS(quizId || 'ABC-123'));
+    const handleEndQuiz = async () => {
+        await session.endSession();
+        const roomCode = session.roomCode ?? quizId ?? '';
+        navigate(ROUTES.PARTICIPANT_RESULTS(roomCode));
     };
 
     const { currentQuestion, answerStats, participantAnswered } = session;
+
+    if (!currentQuestion) {
+        return (
+            <div className={styles.page}>
+                <div className={styles.inner}>
+                    <p>Waiting for session to start…</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.page}>

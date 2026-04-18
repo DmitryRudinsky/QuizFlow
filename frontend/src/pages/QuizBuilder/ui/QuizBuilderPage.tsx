@@ -39,12 +39,12 @@ export const QuizBuilderPage = observer(() => {
         }
     }, [quizId, isEditing, quizBuilder]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!quizBuilder.quizTitle || quizBuilder.questions.length === 0) {
             toast.error('Please add a title and at least one question');
             return;
         }
-        const success = quizBuilder.save();
+        const success = await quizBuilder.save();
         if (success) {
             toast.success('Quiz saved successfully!');
             setTimeout(() => navigate(ROUTES.ORGANIZER_DASHBOARD), 500);

@@ -1,3 +1,4 @@
+import { useStore } from '@app/providers/useStore';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';
 import { Card } from '@shared/ui/Card';
@@ -9,47 +10,38 @@ import { useParams } from 'react-router';
 
 import styles from './ParticipantLivePage.module.scss';
 
-const mockQuestion = {
-    id: '1',
-    questionText: 'What is the output of: console.log(typeof null)?',
-    answers: [
-        { id: 'a1', text: 'null' },
-        { id: 'a2', text: 'object' },
-        { id: 'a3', text: 'undefined' },
-        { id: 'a4', text: 'number' },
-    ],
-    timeLimit: 30,
-    correctAnswerId: 'a2',
-};
-
 type AnswerState = 'default' | 'selected' | 'submitted' | 'correct' | 'incorrect' | 'expired';
 
 export const ParticipantLivePage = observer(() => {
     const { roomCode } = useParams();
+    const { session } = useStore();
     const { t } = useTranslation();
     const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
     const [answerState, setAnswerState] = useState<AnswerState>('default');
-    const [timeLeft, setTimeLeft] = useState(mockQuestion.timeLimit);
-    const [currentQuestion] = useState(1);
-    const [totalQuestions] = useState(15);
+    const [correctAnswerIds, setCorrectAnswerIds] = useState<string[]>([]);
+    const [pointsEarned, setPointsEarned] = useState(0);
     const [isWaiting, setIsWaiting] = useState(false);
 
+    const { currentQuestion } = session;
+
     useEffect(() => {
-        if (answerState === 'default' || answerState === 'selected') {
-            if (timeLeft > 0) {
-                const timer = setInterval(() => {
-                    setTimeLeft((prev) => {
-                        if (prev <= 1) {
-                            setAnswerState('expired');
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }, 1000);
-                return () => clearInterval(timer);
-            }
+        setSelectedAnswers([]);
+        setAnswerState('default');
+        setCorrectAnswerIds([]);
+        setPointsEarned(0);
+        setIsWaiting(false);
+    }, [currentQuestion?.id]);
+
+    useEffect(() => {
+        if (
+            session.timeLeft === 0 &&
+            answerState !== 'submitted' &&
+            answerState !== 'correct' &&
+            answerState !== 'incorrect'
+        ) {
+            setAnswerState('expired');
         }
-    }, [timeLeft, answerState]);
+    }, [session.timeLeft, answerState]);
 
     const handleAnswerClick = (answerId: string) => {
         if (answerState === 'submitted' || answerState === 'expired') {
@@ -59,33 +51,39 @@ export const ParticipantLivePage = observer(() => {
         setAnswerState('selected');
     };
 
-    const handleSubmit = () => {
-        if (selectedAnswers.length === 0) {
+    const handleSubmit = async () => {
+        if (selectedAnswers.length === 0 || !currentQuestion) {
             return;
         }
         setAnswerState('submitted');
-        setTimeout(() => {
-            const isCorrect = selectedAnswers.includes(mockQuestion.correctAnswerId);
-            setAnswerState(isCorrect ? 'correct' : 'incorrect');
-            setTimeout(() => setIsWaiting(true), 2000);
-        }, 500);
+        const result = await session.submitAnswer(currentQuestion.id, selectedAnswers);
+        if (result) {
+            setCorrectAnswerIds(result.correctAnswerIds);
+            setPointsEarned(result.pointsEarned);
+            setAnswerState(result.isCorrect ? 'correct' : 'incorrect');
+        } else {
+            setAnswerState('incorrect');
+        }
+        setTimeout(() => setIsWaiting(true), 2000);
     };
 
-    if (isWaiting) {
+    if (!currentQuestion || isWaiting) {
         return (
             <div className={styles.waitingPage}>
                 <Card className={styles.waitingCard}>
                     <Loader2 className={`${styles.waitingSpinner} ${styles.spin}`} />
                     <h2 className={styles.waitingTitle}>{t('participantLive.waiting')}</h2>
                     <p className={styles.waitingSubtitle}>{t('participantLive.waitingHint')}</p>
-                    <div className={styles.waitingProgress}>
-                        <div className={styles.waitingProgressLabel}>
-                            {t('participantLive.progress')}
+                    {currentQuestion && (
+                        <div className={styles.waitingProgress}>
+                            <div className={styles.waitingProgressLabel}>
+                                {t('participantLive.progress')}
+                            </div>
+                            <div className={styles.waitingProgressValue}>
+                                {session.currentQuestionIndex + 1} / {session.totalQuestions}
+                            </div>
                         </div>
-                        <div className={styles.waitingProgressValue}>
-                            {currentQuestion} / {totalQuestions}
-                        </div>
-                    </div>
+                    )}
                 </Card>
             </div>
         );
@@ -103,14 +101,14 @@ export const ParticipantLivePage = observer(() => {
                         </div>
                         <div className={styles.headerQuestion}>
                             {t('participantLive.questionOf', {
-                                current: currentQuestion,
-                                total: totalQuestions,
+                                current: session.currentQuestionIndex + 1,
+                                total: session.totalQuestions,
                             })}
                         </div>
                     </div>
                     <CountdownTimer
-                        timeLeft={timeLeft}
-                        totalTime={mockQuestion.timeLimit}
+                        timeLeft={session.timeLeft}
+                        totalTime={currentQuestion.timeLimit}
                         size='small'
                     />
                 </div>
@@ -121,14 +119,16 @@ export const ParticipantLivePage = observer(() => {
                     <Card className={styles.questionCard}>
                         <div className={styles.questionPad}>
                             <div className={styles.questionLabel}>
-                                {t('participantLive.question', { current: currentQuestion })}
+                                {t('participantLive.question', {
+                                    current: session.currentQuestionIndex + 1,
+                                })}
                             </div>
-                            <h2 className={styles.questionText}>{mockQuestion.questionText}</h2>
+                            <h2 className={styles.questionText}>{currentQuestion.questionText}</h2>
 
                             <div className={styles.answersGrid}>
-                                {mockQuestion.answers.map((answer) => {
+                                {currentQuestion.answers.map((answer) => {
                                     const isSelected = selectedAnswers.includes(answer.id);
-                                    const isCorrect = answer.id === mockQuestion.correctAnswerId;
+                                    const isCorrect = correctAnswerIds.includes(answer.id);
 
                                     let buttonClass = styles.answerButton;
                                     if (showResult) {
@@ -174,7 +174,7 @@ export const ParticipantLivePage = observer(() => {
 
                             {answerState !== 'expired' && !showResult && (
                                 <Button
-                                    onClick={handleSubmit}
+                                    onClick={() => void handleSubmit()}
                                     disabled={
                                         selectedAnswers.length === 0 || answerState === 'submitted'
                                     }
@@ -200,7 +200,7 @@ export const ParticipantLivePage = observer(() => {
                                 <div className={styles.correctBox}>
                                     <Check className={styles.correctIcon} />
                                     <p className={styles.correctText}>
-                                        {t('participantLive.correct', { points: 100 })}
+                                        {t('participantLive.correct', { points: pointsEarned })}
                                     </p>
                                 </div>
                             )}

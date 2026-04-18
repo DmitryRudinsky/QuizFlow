@@ -1,6 +1,7 @@
 import { expect, type Page, test } from '@playwright/test';
 
-// Kill all CSS transitions/animations so screenshots are pixel-stable
+import { mockApi } from './helpers/mocks';
+
 async function disableAnimations(page: Page) {
     await page.addStyleTag({
         content: `
@@ -20,6 +21,7 @@ async function loginAsOrganizer(page: Page) {
     await page.fill('#password', 'pass');
     await page.click('button:has-text("Log In")');
     await page.waitForURL('**/organizer/dashboard');
+    await page.waitForLoadState('networkidle');
 }
 
 // Fixed viewport for deterministic screenshots
@@ -78,18 +80,20 @@ test.describe('Visual regression — auth pages', () => {
 });
 
 test.describe('Visual regression — participant pages', () => {
+    test.beforeEach(async ({ page }) => {
+        await mockApi(page);
+    });
+
     test('join', async ({ page }) => {
         await page.goto('/join');
         await disableAnimations(page);
         await expect(page).toHaveScreenshot('join.png');
     });
 
-    test('participant-live', async ({ page }) => {
+    test('participant-live (waiting state)', async ({ page }) => {
         await page.goto('/quiz/ABC-123/live');
+        await page.waitForLoadState('networkidle');
         await disableAnimations(page);
-        await page.addStyleTag({
-            content: '[data-testid="countdown-timer"] { visibility: hidden; }',
-        });
         await expect(page).toHaveScreenshot('participant-live.png');
     });
 
@@ -108,6 +112,10 @@ test.describe('Visual regression — participant pages', () => {
 });
 
 test.describe('Visual regression — organizer pages', () => {
+    test.beforeEach(async ({ page }) => {
+        await mockApi(page);
+    });
+
     test('organizer-dashboard', async ({ page }) => {
         await loginAsOrganizer(page);
         await disableAnimations(page);
@@ -121,6 +129,7 @@ test.describe('Visual regression — organizer pages', () => {
     });
 
     test('quiz-builder-edit', async ({ page }) => {
+        await loginAsOrganizer(page);
         await page.goto('/organizer/quiz/1/edit');
         await disableAnimations(page);
         await expect(page).toHaveScreenshot('quiz-builder-edit.png');
@@ -132,12 +141,10 @@ test.describe('Visual regression — organizer pages', () => {
         await expect(page).toHaveScreenshot('quiz-settings.png');
     });
 
-    test('live-host', async ({ page }) => {
+    test('live-host (waiting state)', async ({ page }) => {
         await page.goto('/organizer/quiz/1/live');
+        await page.waitForLoadState('networkidle');
         await disableAnimations(page);
-        await page.addStyleTag({
-            content: '[data-testid="countdown-timer"] { visibility: hidden; }',
-        });
         await expect(page).toHaveScreenshot('live-host.png');
     });
 

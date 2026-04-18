@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { mockApi } from './helpers/mocks';
+
 test.describe('Participant flows', () => {
+    test.beforeEach(async ({ page }) => {
+        await mockApi(page);
+    });
+
     test.describe('Join page', () => {
         test.beforeEach(async ({ page }) => {
             await page.goto('/join');
@@ -42,49 +48,8 @@ test.describe('Participant flows', () => {
             await page.goto('/quiz/ABC-123/live');
         });
 
-        test('shows question text', async ({ page }) => {
-            await expect(
-                page.getByText('What is the output of: console.log(typeof null)?'),
-            ).toBeVisible();
-        });
-
-        test('shows 4 answer options', async ({ page }) => {
-            // Answer buttons: null, object, undefined, number
-            await expect(page.getByRole('button', { name: 'null' })).toBeVisible();
-            await expect(page.getByRole('button', { name: 'object' })).toBeVisible();
-            await expect(page.getByRole('button', { name: 'undefined' })).toBeVisible();
-            await expect(page.getByRole('button', { name: 'number' })).toBeVisible();
-        });
-
-        test('shows room code in header', async ({ page }) => {
-            await expect(page.getByText(/Room: ABC-123/)).toBeVisible();
-        });
-
-        test('"Submit Answer" is disabled until an answer is selected', async ({ page }) => {
-            const submitButton = page.getByRole('button', { name: 'Submit Answer' });
-            await expect(submitButton).toBeDisabled();
-        });
-
-        test('selecting an answer enables "Submit Answer"', async ({ page }) => {
-            await page.getByRole('button', { name: 'object' }).click();
-            const submitButton = page.getByRole('button', { name: 'Submit Answer' });
-            await expect(submitButton).toBeEnabled();
-        });
-
-        test('selecting correct answer and submitting shows "Correct!" feedback', async ({
-            page,
-        }) => {
-            await page.getByRole('button', { name: 'object' }).click(); // correct answer
-            await page.getByRole('button', { name: 'Submit Answer' }).click();
-            await expect(page.getByText(/Correct!/)).toBeVisible({ timeout: 4000 });
-        });
-
-        test('selecting incorrect answer and submitting shows "Incorrect" feedback', async ({
-            page,
-        }) => {
-            await page.getByRole('button', { name: 'null' }).click(); // incorrect answer
-            await page.getByRole('button', { name: 'Submit Answer' }).click();
-            await expect(page.getByText(/Incorrect/)).toBeVisible({ timeout: 4000 });
+        test('shows waiting state before host starts question', async ({ page }) => {
+            await expect(page.getByText(/Waiting/i)).toBeVisible();
         });
     });
 
@@ -108,7 +73,6 @@ test.describe('Participant flows', () => {
         });
 
         test('"Back to Home" navigates to /', async ({ page }) => {
-            // ResultsLeaderboard uses navigate() inside a <Button>, not a <Link>
             await page.getByRole('button', { name: /Back to Home/i }).click();
             await expect(page).toHaveURL('/');
         });

@@ -144,28 +144,18 @@ export class QuizBuilderStore {
         });
     }
 
-    save(): boolean {
+    async save(): Promise<boolean> {
         if (!this.quizTitle || this.questions.length === 0) {
             return false;
         }
 
-        const quizData = {
-            title: this.quizTitle,
-            description: this.description,
-            category: this.category,
-            questions: this.questions,
-            settings: this.settings,
-            createdBy: this.root.user.currentUser?.id ?? 'unknown',
-            createdAt: new Date().toISOString(),
-        };
-
         if (this.quizId) {
-            this.root.quiz.updateQuiz(this.quizId, quizData);
-        } else {
-            this.root.quiz.addQuiz({
-                id: Date.now().toString(),
-                ...quizData,
+            await this.root.quiz.updateQuiz(this.quizId, {
+                title: this.quizTitle,
+                description: this.description,
             });
+        } else {
+            await this.root.quiz.createQuiz(this.quizTitle, this.description);
         }
         return true;
     }

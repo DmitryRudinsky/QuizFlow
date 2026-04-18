@@ -1,81 +1,113 @@
-import { QuizStore } from '@entities/Quiz/model/quizStore';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { RootStore } from '@app/model/rootStore';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const INITIAL_QUIZ_COUNT = 4;
+vi.mock('@shared/api/generated', () => ({
+    getQuizzesByUser: vi.fn(),
+    getQuiz: vi.fn(),
+    createQuiz: vi.fn(),
+    updateQuiz: vi.fn(),
+    deleteQuiz: vi.fn(),
+}));
+
+import * as api from '@shared/api/generated';
 
 describe('QuizStore', () => {
-    let store: QuizStore;
+    let root: RootStore;
 
     beforeEach(() => {
-        store = new QuizStore();
+        root = new RootStore();
+        vi.clearAllMocks();
     });
 
-    describe('totalQuizzes', () => {
-        it('equals quizList.length initially', () => {
-            expect(store.totalQuizzes).toBe(INITIAL_QUIZ_COUNT);
-        });
-
-        it('updates after addQuiz', () => {
-            store.addQuiz({
-                id: 'new',
-                title: 'New',
-                description: '',
-                category: '',
-                questions: [],
-                settings: {
-                    timePerQuestion: 30,
-                    scoringMode: 'standard',
-                    allowAnswerChanges: false,
-                    randomizeQuestions: false,
-                    showCorrectAnswers: 'after-each',
-                },
-                createdBy: 'user-1',
-                createdAt: new Date().toISOString(),
-            });
-            expect(store.totalQuizzes).toBe(INITIAL_QUIZ_COUNT + 1);
+    describe('initial state', () => {
+        it('starts with empty quizList', () => {
+            expect(root.quiz.quizList).toHaveLength(0);
+            expect(root.quiz.totalQuizzes).toBe(0);
         });
     });
 
-    describe('getById', () => {
-        it('returns the correct quiz for a known id', () => {
-            const quiz = store.getById('1');
-            expect(quiz).toBeDefined();
-            expect(quiz?.title).toBe('JavaScript Fundamentals');
-        });
+    describe('fetchByUser', () => {
+        it('populates quizList on success', async () => {
+            vi.mocked(api.getQuizzesByUser).mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        title: 'JS Basics',
+                        description: '',
+                        category: '',
+                        createdBy: 'u1',
+                        createdAt: '',
+                        questionCount: 5,
+                    },
+                ],
+                status: 200,
+                headers: new Headers(),
+            } as never);
 
-        it('returns undefined for an unknown id', () => {
-            expect(store.getById('nonexistent')).toBeUndefined();
+            root.user.setUser({ id: 'u1', name: 'Test', email: 't@t.com', role: 'organizer' });
+            await root.quiz.fetchByUser();
+
+            expect(root.quiz.quizList).toHaveLength(1);
+            expect(root.quiz.quizList[0].title).toBe('JS Basics');
         });
     });
 
     describe('deleteQuiz', () => {
-        it('removes the quiz from the list', () => {
-            store.deleteQuiz('1');
-            expect(store.quizList).toHaveLength(INITIAL_QUIZ_COUNT - 1);
-        });
+        it('removes quiz from list on success', async () => {
+            vi.mocked(api.deleteQuiz).mockResolvedValue({
+                data: undefined,
+                status: 204,
+                headers: new Headers(),
+            } as never);
 
-        it('the deleted quiz is no longer retrievable', () => {
-            store.deleteQuiz('1');
-            expect(store.getById('1')).toBeUndefined();
-        });
+            root.quiz.quizList = [
+                {
+                    id: '1',
+                    title: 'Quiz',
+                    description: '',
+                    category: '',
+                    createdBy: 'u1',
+                    createdAt: '',
+                    questions: [],
+                    questionCount: 0,
+                    settings: {
+                        timePerQuestion: 30,
+                        scoringMode: 'standard',
+                        allowAnswerChanges: false,
+                        randomizeQuestions: false,
+                        showCorrectAnswers: 'after-each',
+                    },
+                },
+            ];
 
-        it('does nothing for an unknown id', () => {
-            store.deleteQuiz('nonexistent');
-            expect(store.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
+            await root.quiz.deleteQuiz('1');
+            expect(root.quiz.quizList).toHaveLength(0);
         });
     });
 
-    describe('updateQuiz', () => {
-        it('patches only the specified fields', () => {
-            store.updateQuiz('1', { title: 'Updated Title' });
-            const quiz = store.getById('1')!;
-            expect(quiz.title).toBe('Updated Title');
-            expect(quiz.description).toBe('Test your knowledge of JavaScript core concepts');
-        });
-
-        it('does nothing for an unknown id', () => {
-            store.updateQuiz('nonexistent', { title: 'Should Not Appear' });
-            expect(store.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
+    describe('getById', () => {
+        it('returns quiz by id', () => {
+            root.quiz.quizList = [
+                {
+                    id: '42',
+                    title: 'Found',
+                    description: '',
+                    category: '',
+                    createdBy: 'u1',
+                    createdAt: '',
+                    questions: [],
+                    questionCount: 0,
+                    settings: {
+                        timePerQuestion: 30,
+                        scoringMode: 'standard',
+                        allowAnswerChanges: false,
+                        randomizeQuestions: false,
+                        showCorrectAnswers: 'after-each',
+                    },
+                },
+            ];
+            expect(root.quiz.getById('42')?.title).toBe('Found');
+            expect(root.quiz.getById('nonexistent')).toBeUndefined();
         });
     });
 });

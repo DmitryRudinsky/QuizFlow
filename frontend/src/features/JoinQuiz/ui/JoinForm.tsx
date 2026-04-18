@@ -1,3 +1,4 @@
+import { useStore } from '@app/providers/useStore';
 import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';
@@ -13,12 +14,12 @@ import styles from './JoinForm.module.scss';
 
 export const JoinForm = observer(() => {
     const navigate = useNavigate();
+    const { session } = useStore();
     const { t } = useTranslation();
     const [roomCode, setRoomCode] = useState('');
     const [nickname, setNickname] = useState('');
-    const [isJoining, setIsJoining] = useState(false);
 
-    const handleJoin = (e: React.FormEvent) => {
+    const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!roomCode || !nickname) {
             toast.error(t('joinForm.errorBoth'));
@@ -28,10 +29,12 @@ export const JoinForm = observer(() => {
             toast.error(t('joinForm.errorCode'));
             return;
         }
-        setIsJoining(true);
-        setTimeout(() => {
-            navigate(ROUTES.PARTICIPANT_LIVE(roomCode));
-        }, 1000);
+        await session.joinSession(roomCode, nickname);
+        if (session.error) {
+            toast.error(session.error);
+            return;
+        }
+        navigate(ROUTES.PARTICIPANT_LIVE(roomCode));
     };
 
     return (
@@ -58,8 +61,13 @@ export const JoinForm = observer(() => {
                     maxLength={20}
                 />
             </div>
-            <Button type='submit' className={styles.submitButton} size='lg' disabled={isJoining}>
-                {isJoining ? (
+            <Button
+                type='submit'
+                className={styles.submitButton}
+                size='lg'
+                disabled={session.isLoading}
+            >
+                {session.isLoading ? (
                     <span className={styles.spinnerRow}>
                         <Loader2 className={styles.spin} />
                         {t('joinForm.submitting')}

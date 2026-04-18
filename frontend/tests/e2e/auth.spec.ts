@@ -1,6 +1,8 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 
+import { mockApi } from './helpers/mocks';
+
 async function loginAs(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('#email', email);
@@ -9,6 +11,10 @@ async function loginAs(page: Page, email: string) {
 }
 
 test.describe('Auth flows', () => {
+    test.beforeEach(async ({ page }) => {
+        await mockApi(page);
+    });
+
     test.describe('Login', () => {
         test('organizer email redirects to /organizer/dashboard', async ({ page }) => {
             await loginAs(page, 'organizer@example.com');

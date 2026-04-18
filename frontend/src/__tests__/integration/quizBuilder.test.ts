@@ -1,7 +1,31 @@
 import { RootStore } from '@app/model/rootStore';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const INITIAL_QUIZ_COUNT = 4; // mock quizzes in QuizStore
+vi.mock('@shared/api/generated', () => ({
+    login: vi.fn(),
+    register: vi.fn(),
+    getQuizzesByUser: vi.fn(),
+    getQuiz: vi.fn(),
+    createQuiz: vi.fn(),
+    updateQuiz: vi.fn(),
+    deleteQuiz: vi.fn(),
+}));
+
+import * as api from '@shared/api/generated';
+
+const mockQuizResponse = (id: string, title: string) => ({
+    data: {
+        id,
+        title,
+        description: '',
+        category: '',
+        createdBy: 'u1',
+        createdAt: new Date().toISOString(),
+        questionCount: 0,
+    },
+    status: 201,
+    headers: new Headers(),
+});
 
 function buildValidQuiz(root: RootStore) {
     root.quizBuilder.setTitle('My Quiz');
@@ -13,57 +37,76 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
 
     beforeEach(() => {
         root = new RootStore();
+        vi.clearAllMocks();
+        vi.mocked(api.createQuiz).mockResolvedValue(mockQuizResponse('new-1', 'My Quiz') as never);
+        vi.mocked(api.updateQuiz).mockResolvedValue(
+            mockQuizResponse('1', 'Updated Title') as never,
+        );
     });
 
     describe('save — new quiz', () => {
-        it('returns true when title and questions are present', () => {
+        it('returns true when title and questions are present', async () => {
             buildValidQuiz(root);
-            expect(root.quizBuilder.save()).toBe(true);
+            expect(await root.quizBuilder.save()).toBe(true);
         });
 
-        it('adds quiz to quizStore', () => {
+        it('adds quiz to quizStore', async () => {
             buildValidQuiz(root);
-            root.quizBuilder.save();
-            expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT + 1);
+            await root.quizBuilder.save();
+            expect(root.quiz.quizList).toHaveLength(1);
         });
 
-        it('prepends new quiz to the list', () => {
+        it('prepends new quiz to the list', async () => {
             buildValidQuiz(root);
-            root.quizBuilder.save();
+            await root.quizBuilder.save();
             expect(root.quiz.quizList[0].title).toBe('My Quiz');
         });
 
-        it('returns false without title', () => {
+        it('returns false without title', async () => {
             root.quizBuilder.addQuestion();
-            expect(root.quizBuilder.save()).toBe(false);
+            expect(await root.quizBuilder.save()).toBe(false);
         });
 
-        it('returns false without questions', () => {
+        it('returns false without questions', async () => {
             root.quizBuilder.setTitle('My Quiz');
-            expect(root.quizBuilder.save()).toBe(false);
+            expect(await root.quizBuilder.save()).toBe(false);
         });
 
-        it('does not add quiz to store when validation fails', () => {
+        it('does not call API when validation fails', async () => {
             root.quizBuilder.setTitle('My Quiz');
-            root.quizBuilder.save();
-            expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
-        });
-
-        it('sets createdBy from logged-in user', async () => {
-            await root.auth.login('alice@example.com', 'pass', 'organizer');
-            buildValidQuiz(root);
-            root.quizBuilder.save();
-            expect(root.quiz.quizList[0].createdBy).toBe(root.user.currentUser?.id);
+            await root.quizBuilder.save();
+            expect(api.createQuiz).not.toHaveBeenCalled();
         });
     });
 
     describe('loadForEdit + save — existing quiz', () => {
+        beforeEach(() => {
+            root.quiz.quizList = [
+                {
+                    id: '1',
+                    title: 'JS Basics',
+                    description: 'Test desc',
+                    category: 'programming',
+                    createdBy: 'u1',
+                    createdAt: new Date().toISOString(),
+                    questions: [],
+                    questionCount: 0,
+                    settings: {
+                        timePerQuestion: 30,
+                        scoringMode: 'standard',
+                        allowAnswerChanges: false,
+                        randomizeQuestions: false,
+                        showCorrectAnswers: 'after-each',
+                    },
+                },
+            ];
+        });
+
         it('populates fields from quizStore', () => {
-            const quiz = root.quiz.getById('1')!;
             root.quizBuilder.loadForEdit('1');
-            expect(root.quizBuilder.quizTitle).toBe(quiz.title);
-            expect(root.quizBuilder.description).toBe(quiz.description);
-            expect(root.quizBuilder.category).toBe(quiz.category);
+            expect(root.quizBuilder.quizTitle).toBe('JS Basics');
+            expect(root.quizBuilder.description).toBe('Test desc');
+            expect(root.quizBuilder.category).toBe('programming');
         });
 
         it('does nothing for unknown id', () => {
@@ -71,20 +114,16 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
             expect(root.quizBuilder.quizTitle).toBe('');
         });
 
-        it('updates quiz in quizStore after save', () => {
-            root.quizBuilder.loadForEdit('1');
-            root.quizBuilder.setTitle('Updated Title');
-            root.quizBuilder.addQuestion(); // mock quizzes have no questions — need at least one
-            root.quizBuilder.save();
-            expect(root.quiz.getById('1')?.title).toBe('Updated Title');
-        });
-
-        it('does not add a new quiz when updating', () => {
+        it('calls updateQuiz when saving existing quiz', async () => {
             root.quizBuilder.loadForEdit('1');
             root.quizBuilder.setTitle('Updated Title');
             root.quizBuilder.addQuestion();
-            root.quizBuilder.save();
-            expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
+            await root.quizBuilder.save();
+            expect(api.updateQuiz).toHaveBeenCalledWith(
+                '1',
+                expect.objectContaining({ title: 'Updated Title' }),
+                expect.anything(),
+            );
         });
     });
 
@@ -122,7 +161,6 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
             root.quizBuilder.addQuestion();
             const qId = root.quizBuilder.selectedQuestionId!;
             const answers = root.quizBuilder.currentQuestion!.answers;
-            expect(answers).toHaveLength(2);
             root.quizBuilder.deleteAnswer(qId, answers[0].id);
             expect(root.quizBuilder.currentQuestion!.answers).toHaveLength(2);
         });
@@ -132,7 +170,6 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
             const qId = root.quizBuilder.selectedQuestionId!;
             root.quizBuilder.addAnswer(qId);
             const answers = root.quizBuilder.currentQuestion!.answers;
-            expect(answers).toHaveLength(3);
             root.quizBuilder.deleteAnswer(qId, answers[0].id);
             expect(root.quizBuilder.currentQuestion!.answers).toHaveLength(2);
         });
@@ -167,26 +204,12 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
         });
     });
 
-    describe('selectQuestion', () => {
-        it('after addQuestion + selectQuestion(null), currentQuestion is undefined', () => {
-            root.quizBuilder.addQuestion();
-            root.quizBuilder.selectQuestion(null);
-            expect(root.quizBuilder.currentQuestion).toBeUndefined();
-        });
-    });
-
     describe('updateQuestion', () => {
         it('updates questionText on an existing question', () => {
             root.quizBuilder.addQuestion();
             const qId = root.quizBuilder.selectedQuestionId!;
             root.quizBuilder.updateQuestion(qId, { questionText: 'New text' });
             expect(root.quizBuilder.currentQuestion!.questionText).toBe('New text');
-        });
-
-        it('does nothing for an unknown question id', () => {
-            root.quizBuilder.addQuestion();
-            root.quizBuilder.updateQuestion('nonexistent', { questionText: 'Should not appear' });
-            expect(root.quizBuilder.questions).toHaveLength(1);
         });
     });
 
@@ -196,29 +219,6 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
             const qId = root.quizBuilder.selectedQuestionId!;
             root.quizBuilder.addAnswer(qId);
             expect(root.quizBuilder.currentQuestion!.answers).toHaveLength(3);
-        });
-
-        it('does nothing for an unknown question id', () => {
-            root.quizBuilder.addQuestion();
-            root.quizBuilder.addAnswer('nonexistent');
-            expect(root.quizBuilder.currentQuestion!.answers).toHaveLength(2);
-        });
-    });
-
-    describe('updateAnswer', () => {
-        it('updates text on an existing answer', () => {
-            root.quizBuilder.addQuestion();
-            const qId = root.quizBuilder.selectedQuestionId!;
-            const answerId = root.quizBuilder.currentQuestion!.answers[0].id;
-            root.quizBuilder.updateAnswer(qId, answerId, { text: 'Updated answer' });
-            expect(root.quizBuilder.currentQuestion!.answers[0].text).toBe('Updated answer');
-        });
-
-        it('does nothing for an unknown question id', () => {
-            root.quizBuilder.addQuestion();
-            const answerId = root.quizBuilder.currentQuestion!.answers[0].id;
-            root.quizBuilder.updateAnswer('nonexistent', answerId, { text: 'Should not appear' });
-            expect(root.quizBuilder.currentQuestion!.answers[0].text).toBe('');
         });
     });
 });

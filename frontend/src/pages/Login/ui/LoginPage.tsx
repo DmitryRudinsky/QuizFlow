@@ -22,9 +22,9 @@ export const LoginPage = observer(() => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        await auth.login(email, password);
         const role =
             email.includes('organizer') || email.includes('host') ? 'organizer' : 'participant';
-        await auth.login(email, password, role);
         navigate(role === 'organizer' ? ROUTES.ORGANIZER_DASHBOARD : ROUTES.PARTICIPANT_JOIN);
     };
 

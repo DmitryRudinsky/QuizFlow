@@ -35,8 +35,8 @@ describe('UserStore', () => {
             expect(store.isAuthenticated).toBe(false);
         });
 
-        it('quizHistory starts with mock data', () => {
-            expect(store.quizHistory.length).toBeGreaterThan(0);
+        it('quizHistory starts empty', () => {
+            expect(store.quizHistory).toHaveLength(0);
         });
     });
 

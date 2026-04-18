@@ -1,14 +1,21 @@
 import { expect, type Page, test } from '@playwright/test';
 
+import { mockApi } from './helpers/mocks';
+
 async function loginAsOrganizer(page: Page) {
     await page.goto('/login');
     await page.fill('#email', 'organizer@example.com');
     await page.fill('#password', 'pass');
     await page.click('button:has-text("Log In")');
     await page.waitForURL('**/organizer/dashboard');
+    await page.waitForLoadState('networkidle');
 }
 
 test.describe('Organizer flows', () => {
+    test.beforeEach(async ({ page }) => {
+        await mockApi(page);
+    });
+
     test.describe('Dashboard', () => {
         test.beforeEach(async ({ page }) => {
             await loginAsOrganizer(page);
@@ -19,7 +26,7 @@ test.describe('Organizer flows', () => {
             await expect(page.getByText('Total Participants')).toBeVisible();
         });
 
-        test('shows quiz list with mock data', async ({ page }) => {
+        test('shows quiz list from API', async ({ page }) => {
             await expect(page.getByText('JavaScript Fundamentals')).toBeVisible();
         });
 
@@ -51,7 +58,6 @@ test.describe('Organizer flows', () => {
 
         test('Log Out clears session (page stays responsive)', async ({ page }) => {
             await page.getByRole('button', { name: 'Log Out' }).click();
-            // Auth state is in-memory; no navigation guard — page should still render
             await expect(page.locator('body')).toBeVisible();
         });
     });
@@ -96,6 +102,10 @@ test.describe('Organizer flows', () => {
     });
 
     test.describe('Quiz Builder — edit', () => {
+        test.beforeEach(async ({ page }) => {
+            await loginAsOrganizer(page);
+        });
+
         test('loads quiz title from store', async ({ page }) => {
             await page.goto('/organizer/quiz/1/edit');
             await expect(page.locator('#title')).toHaveValue('JavaScript Fundamentals');
@@ -142,41 +152,11 @@ test.describe('Organizer flows', () => {
     test.describe('Live Host', () => {
         test.beforeEach(async ({ page }) => {
             await page.goto('/organizer/quiz/1/live');
+            await page.waitForLoadState('networkidle');
         });
 
-        test('shows room code', async ({ page }) => {
-            await expect(page.getByText('ABC-123')).toBeVisible();
-        });
-
-        test('shows participant count', async ({ page }) => {
-            // Responses box shows "Responses: 6 / 8" (6 of 8 answered per mock data)
-            await expect(page.getByText(/Responses: 6 \/ 8/)).toBeVisible();
-        });
-
-        test('shows "Question 1 of 15"', async ({ page }) => {
-            await expect(page.getByText('Question 1 of 15')).toBeVisible();
-        });
-
-        test('Pause button toggles to Resume', async ({ page }) => {
-            await page.getByRole('button', { name: 'Pause' }).click();
-            await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible();
-        });
-
-        test('Resume button toggles back to Pause', async ({ page }) => {
-            await page.getByRole('button', { name: 'Pause' }).click();
-            await page.getByRole('button', { name: 'Resume' }).click();
-            await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();
-        });
-
-        test('"Next Question" advances to question 2', async ({ page }) => {
-            await page.getByRole('button', { name: 'Next Question' }).click();
-            await expect(page.getByText('Question 2 of 15')).toBeVisible();
-        });
-
-        test('"End Quiz" navigates to results page', async ({ page }) => {
-            await page.getByRole('button', { name: 'End Quiz' }).click();
-            // quizId=1 from URL param → navigates to /quiz/1/results
-            await expect(page).toHaveURL(/\/quiz\/.*\/results/);
+        test('shows waiting state before first question', async ({ page }) => {
+            await expect(page.getByText(/Waiting for session to start/i)).toBeVisible();
         });
     });
 

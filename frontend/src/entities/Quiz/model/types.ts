@@ -15,6 +15,7 @@ export interface Quiz {
     category: string;
     coverImage?: string;
     questions: Question[];
+    questionCount: number;
     settings: QuizSettings;
     createdBy: string;
     createdAt: string;
