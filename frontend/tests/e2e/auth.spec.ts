@@ -26,6 +26,7 @@ test.describe('Auth flows', () => {
         });
 
         test('shows "Logging in..." during login', async ({ page }) => {
+            await mockAuthApi(page, 200);
             await page.goto('/login');
             await page.fill('#email', 'alice@example.com');
             await page.fill('#password', 'Test@1');

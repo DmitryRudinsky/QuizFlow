@@ -14,8 +14,11 @@ const PARTICIPANT = {
     role: 'participant',
 };
 
-export async function mockAuthApi(page: Page) {
+export async function mockAuthApi(page: Page, loginDelayMs = 0) {
     await page.route('**/api/auth/login', async (route) => {
+        if (loginDelayMs > 0) {
+            await new Promise((resolve) => setTimeout(resolve, loginDelayMs));
+        }
         const body = route.request().postDataJSON() as { email: string };
         const user =
             body.email.includes('organizer') || body.email.includes('host')
