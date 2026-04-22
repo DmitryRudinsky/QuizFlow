@@ -14,7 +14,7 @@ import { Link, useNavigate } from 'react-router';
 import styles from './LoginPage.module.scss';
 
 export const LoginPage = observer(() => {
-    const { auth } = useStore();
+    const { auth, user } = useStore();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -22,10 +22,16 @@ export const LoginPage = observer(() => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const role =
-            email.includes('organizer') || email.includes('host') ? 'organizer' : 'participant';
-        await auth.login(email, password, role);
-        navigate(role === 'organizer' ? ROUTES.ORGANIZER_DASHBOARD : ROUTES.PARTICIPANT_JOIN);
+        try {
+            await auth.login(email, password);
+            navigate(
+                user.currentUser?.role === 'organizer'
+                    ? ROUTES.ORGANIZER_DASHBOARD
+                    : ROUTES.PARTICIPANT_JOIN,
+            );
+        } catch {
+            // error displayed below
+        }
     };
 
     return (
@@ -76,6 +82,8 @@ export const LoginPage = observer(() => {
                                     required
                                 />
                             </div>
+
+                            {auth.error && <p className={styles.errorText}>{auth.error}</p>}
 
                             <Button
                                 type='submit'

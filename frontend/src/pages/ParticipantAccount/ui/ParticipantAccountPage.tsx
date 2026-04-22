@@ -1,9 +1,13 @@
 import { useStore } from '@app/providers/useStore';
+import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/ui/Card';
+import { ConfirmDialog } from '@shared/ui/ConfirmDialog';
 import { LanguageSwitcher } from '@shared/ui/LanguageSwitcher';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/ui/Table';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import styles from './ParticipantAccountPage.module.scss';
 
@@ -56,6 +60,8 @@ const mockHistory = [
 export const ParticipantAccountPage = observer(() => {
     const { user, auth } = useStore();
     const { t } = useTranslation();
+    const navigate = useNavigate();
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const currentUser = user.currentUser;
 
     return (
@@ -69,7 +75,10 @@ export const ParticipantAccountPage = observer(() => {
                         </div>
                         <div className={styles.headerActions}>
                             <LanguageSwitcher />
-                            <button className={styles.logoutButton} onClick={() => auth.logout()}>
+                            <button
+                                className={styles.logoutButton}
+                                onClick={() => setShowLogoutDialog(true)}
+                            >
                                 {t('common.logOut')}
                             </button>
                         </div>
@@ -192,6 +201,20 @@ export const ParticipantAccountPage = observer(() => {
                     </CardContent>
                 </Card>
             </div>
+
+            {showLogoutDialog && (
+                <ConfirmDialog
+                    title={t('common.logoutConfirmTitle')}
+                    message={t('common.logoutConfirmMessage')}
+                    confirmLabel={t('common.confirm')}
+                    cancelLabel={t('common.cancel')}
+                    onConfirm={() => {
+                        auth.logout();
+                        navigate(ROUTES.LOGIN);
+                    }}
+                    onCancel={() => setShowLogoutDialog(false)}
+                />
+            )}
         </div>
     );
 });

@@ -1,5 +1,19 @@
 import { RootStore } from '@app/model/rootStore';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@shared/api/generated', () => ({
+    login: vi.fn().mockResolvedValue({
+        data: { id: 'user-1', name: 'alice', email: 'alice@example.com', role: 'organizer' },
+        status: 200,
+        headers: new Headers(),
+    }),
+    register: vi.fn(),
+    getQuizzesByUser: vi.fn(),
+    getQuiz: vi.fn(),
+    createQuiz: vi.fn(),
+    updateQuiz: vi.fn(),
+    deleteQuiz: vi.fn(),
+}));
 
 const INITIAL_QUIZ_COUNT = 4; // mock quizzes in QuizStore
 
@@ -50,7 +64,7 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
         });
 
         it('sets createdBy from logged-in user', async () => {
-            await root.auth.login('alice@example.com', 'pass', 'organizer');
+            await root.auth.login('alice@example.com', 'pass');
             buildValidQuiz(root);
             root.quizBuilder.save();
             expect(root.quiz.quizList[0].createdBy).toBe(root.user.currentUser?.id);

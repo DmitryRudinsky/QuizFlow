@@ -1,10 +1,12 @@
 import { useStore } from '@app/providers/useStore';
 import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
+import { ConfirmDialog } from '@shared/ui/ConfirmDialog';
 import { LanguageSwitcher } from '@shared/ui/LanguageSwitcher';
 import { FileQuestion, LayoutDashboard, LogOut, User } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { Link, useLocation } from 'react-router';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 import styles from './OrganizerSidebar.module.scss';
 
@@ -12,6 +14,8 @@ export const OrganizerSidebar = observer(() => {
     const { auth } = useStore();
     const { t } = useTranslation();
     const location = useLocation();
+    const navigate = useNavigate();
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
     const navItems = [
         { to: ROUTES.ORGANIZER_DASHBOARD, icon: <LayoutDashboard />, label: t('nav.dashboard') },
@@ -45,11 +49,25 @@ export const OrganizerSidebar = observer(() => {
                 <div className={styles.languageSwitcherRow}>
                     <LanguageSwitcher />
                 </div>
-                <button className={styles.navItem} onClick={() => auth.logout()}>
+                <button className={styles.navItem} onClick={() => setShowLogoutDialog(true)}>
                     <LogOut />
                     <span>{t('common.logOut')}</span>
                 </button>
             </div>
+
+            {showLogoutDialog && (
+                <ConfirmDialog
+                    title={t('common.logoutConfirmTitle')}
+                    message={t('common.logoutConfirmMessage')}
+                    confirmLabel={t('common.confirm')}
+                    cancelLabel={t('common.cancel')}
+                    onConfirm={() => {
+                        auth.logout();
+                        navigate(ROUTES.LOGIN);
+                    }}
+                    onCancel={() => setShowLogoutDialog(false)}
+                />
+            )}
         </aside>
     );
 });
