@@ -133,3 +133,9 @@
         text-decoration: underline;
     }
 }
+
+.errorText {
+    color: var(--destructive);
+    font-size: 0.875rem;
+    text-align: center;
+}

@@ -1,10 +1,13 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 
+import { mockAuthApi } from './helpers/mockApi';
+
 async function loginAs(page: Page, email: string) {
+    await mockAuthApi(page);
     await page.goto('/login');
     await page.fill('#email', email);
-    await page.fill('#password', 'pass');
+    await page.fill('#password', 'Test@1');
     await page.click('button:has-text("Log In")');
 }
 
@@ -25,7 +28,7 @@ test.describe('Auth flows', () => {
         test('shows "Logging in..." during login', async ({ page }) => {
             await page.goto('/login');
             await page.fill('#email', 'alice@example.com');
-            await page.fill('#password', 'pass');
+            await page.fill('#password', 'Test@1');
             await page.click('button:has-text("Log In")');
             await expect(page.getByText('Logging in...')).toBeVisible();
         });
@@ -45,34 +48,37 @@ test.describe('Auth flows', () => {
 
     test.describe('Sign Up', () => {
         test('organizer signup redirects to /organizer/dashboard', async ({ page }) => {
+            await mockAuthApi(page);
             await page.goto('/signup');
             await page.getByText('Host Quizzes').click();
             await page.fill('#name', 'Test Host');
             await page.fill('#email', 'host@example.com');
-            await page.fill('#password', 'pass');
+            await page.fill('#password', 'Test@1');
             await page.click('button:has-text("Create Account")');
             await page.waitForURL('**/organizer/dashboard');
             await expect(page).toHaveURL(/\/organizer\/dashboard/);
         });
 
         test('participant signup redirects to /join', async ({ page }) => {
+            await mockAuthApi(page);
             await page.goto('/signup');
             await page.getByText('Play Quizzes').click();
             await page.fill('#name', 'Test Player');
             await page.fill('#email', 'player@example.com');
-            await page.fill('#password', 'pass');
+            await page.fill('#password', 'Test@1');
             await page.click('button:has-text("Create Account")');
             await page.waitForURL('**/join');
             await expect(page).toHaveURL(/\/join/);
         });
 
         test('?role=organizer pre-selects organizer role', async ({ page }) => {
+            await mockAuthApi(page);
             await page.goto('/signup?role=organizer');
             const hostButton = page.getByText('Host Quizzes');
             await expect(hostButton).toBeVisible();
             await page.fill('#name', 'Test Host');
             await page.fill('#email', 'host2@example.com');
-            await page.fill('#password', 'pass');
+            await page.fill('#password', 'Test@1');
             await page.click('button:has-text("Create Account")');
             await page.waitForURL('**/organizer/dashboard');
             await expect(page).toHaveURL(/\/organizer\/dashboard/);
