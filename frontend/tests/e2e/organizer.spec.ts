@@ -1,9 +1,10 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { mockAuthApi } from './helpers/mockApi';
+import { mockAuthApi, mockQuizApi } from './helpers/mockApi';
 
 async function loginAsOrganizer(page: Page) {
     await mockAuthApi(page);
+    await mockQuizApi(page);
     await page.goto('/login');
     await page.fill('#email', 'organizer@example.com');
     await page.fill('#password', 'Test@1');
@@ -42,9 +43,9 @@ test.describe('Organizer flows', () => {
             await expect(page).toHaveURL(/\/organizer\/dashboard/);
         });
 
-        test('My Quizzes link navigates to /organizer/quiz/new', async ({ page }) => {
+        test('My Quizzes link navigates to /organizer/quizzes', async ({ page }) => {
             await page.getByRole('link', { name: 'My Quizzes' }).click();
-            await expect(page).toHaveURL(/\/organizer\/quiz\/new/);
+            await expect(page).toHaveURL(/\/organizer\/quizzes/);
         });
 
         test('Account link navigates to /organizer/account', async ({ page }) => {
@@ -100,7 +101,12 @@ test.describe('Organizer flows', () => {
 
     test.describe('Quiz Builder — edit', () => {
         test('loads quiz title from store', async ({ page }) => {
-            await page.goto('/organizer/quiz/1/edit');
+            await loginAsOrganizer(page);
+            await expect(page.getByText('JavaScript Fundamentals')).toBeVisible();
+            const row = page.locator('tr', { hasText: 'JavaScript Fundamentals' });
+            await row.getByRole('button').click();
+            await page.locator('a[href="/organizer/quiz/1/edit"]').dispatchEvent('click');
+            await expect(page).toHaveURL(/\/organizer\/quiz\/1\/edit/);
             await expect(page.locator('#title')).toHaveValue('JavaScript Fundamentals');
         });
 
