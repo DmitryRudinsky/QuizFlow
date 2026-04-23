@@ -1,7 +1,7 @@
 import type { RootStore } from '@app/model/rootStore';
 import type { UserRole } from '@entities/User/model/types';
 import { customFetch } from '@shared/api/client';
-import { login, register } from '@shared/api/generated';
+import { login, me as getMe, register } from '@shared/api/generated';
 import { makeAutoObservable, runInAction } from 'mobx';
 
 export class AuthStore {
@@ -12,6 +12,23 @@ export class AuthStore {
     constructor(root: RootStore) {
         this.root = root;
         makeAutoObservable(this);
+        this.restoreSession();
+    }
+
+    async restoreSession(): Promise<void> {
+        try {
+            const res = await getMe();
+            runInAction(() => {
+                this.root.user.setUser({
+                    id: res.data.id,
+                    name: res.data.name,
+                    email: res.data.email,
+                    role: res.data.role as UserRole,
+                });
+            });
+        } catch {
+            // нет сессии — остаёмся неаутентифицированными
+        }
     }
 
     async login(email: string, password: string): Promise<void> {

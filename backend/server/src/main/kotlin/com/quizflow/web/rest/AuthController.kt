@@ -3,6 +3,7 @@ package com.quizflow.web.rest
 import com.quizflow.api.request.LoginRequest
 import com.quizflow.api.request.RegisterRequest
 import com.quizflow.api.response.UserResponse
+import com.quizflow.domain.User
 import com.quizflow.domain.UserRole
 import com.quizflow.security.JwtService
 import com.quizflow.service.AuthService
@@ -10,6 +11,9 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -49,6 +53,13 @@ class AuthController(
         val user = authService.login(request.email, request.password)
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie(jwtService.generateToken(user)).toString())
         return user.toResponse()
+    }
+
+    @GetMapping("/me")
+    fun me(): ResponseEntity<UserResponse> {
+        val user = SecurityContextHolder.getContext().authentication?.principal as? User
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        return ResponseEntity.ok(user.toResponse())
     }
 
     @PostMapping("/logout")
