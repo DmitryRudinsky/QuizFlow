@@ -1,6 +1,15 @@
-import { makeAutoObservable } from 'mobx';
+import { getQuizzesByUser } from '@shared/api/generated';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { Quiz } from './types';
+
+const DEFAULT_SETTINGS: Quiz['settings'] = {
+    timePerQuestion: 30,
+    scoringMode: 'standard',
+    allowAnswerChanges: false,
+    randomizeQuestions: false,
+    showCorrectAnswers: 'after-each',
+};
 
 const MOCK_QUIZZES: Quiz[] = [
     {
@@ -79,6 +88,32 @@ export class QuizStore {
 
     get totalQuizzes(): number {
         return this.quizList.length;
+    }
+
+    async fetchByUser(): Promise<void> {
+        this.isLoading = true;
+        try {
+            const res = await getQuizzesByUser();
+            runInAction(() => {
+                this.quizList = res.data.map((q) => ({
+                    id: q.id,
+                    title: q.title,
+                    description: q.description ?? '',
+                    category: q.category ?? '',
+                    questions: [],
+                    questionCount: q.questionCount,
+                    settings: { ...DEFAULT_SETTINGS },
+                    createdBy: q.createdBy,
+                    createdAt: q.createdAt,
+                }));
+            });
+        } catch {
+            // keep existing list on error
+        } finally {
+            runInAction(() => {
+                this.isLoading = false;
+            });
+        }
     }
 
     addQuiz(quiz: Quiz): void {

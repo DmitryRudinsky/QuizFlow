@@ -13,22 +13,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { OrganizerSidebar } from '@widgets/OrganizerSidebar/ui/OrganizerSidebar';
 import { Edit, MoreVertical, Play, Plus, Trash2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 
 import styles from './OrganizerDashboard.module.scss';
 
 export const OrganizerDashboard = observer(() => {
-    const { quiz } = useStore();
+    const { quiz, user } = useStore();
     const { t } = useTranslation();
 
-    const mockMeta = [
-        { id: '1', questions: 15, participants: 42, lastUsed: '2 hours ago', status: 'active' },
-        { id: '2', questions: 20, participants: 38, lastUsed: '1 day ago', status: 'active' },
-        { id: '3', questions: 12, participants: 29, lastUsed: '3 days ago', status: 'draft' },
-        { id: '4', questions: 18, participants: 55, lastUsed: '5 days ago', status: 'active' },
-    ];
-
-    const metaByQuizId = Object.fromEntries(mockMeta.map((m) => [m.id, m]));
+    useEffect(() => {
+        if (user.currentUser) {
+            quiz.fetchByUser();
+        }
+    }, [user]);
 
     return (
         <div className={styles.layout}>
@@ -94,75 +92,61 @@ export const OrganizerDashboard = observer(() => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {quiz.quizList.map((q) => {
-                                        const meta = metaByQuizId[q.id];
-                                        if (!meta) {
-                                            return null;
-                                        }
-                                        return (
-                                            <TableRow key={q.id}>
-                                                <TableCell className={styles.cellBold}>
-                                                    {q.title}
-                                                </TableCell>
-                                                <TableCell>{meta.questions}</TableCell>
-                                                <TableCell>{meta.participants}</TableCell>
-                                                <TableCell className={styles.cellMuted}>
-                                                    {meta.lastUsed}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span
-                                                        className={
-                                                            meta.status === 'active'
-                                                                ? styles.statusBadgeActive
-                                                                : styles.statusBadgeDraft
-                                                        }
-                                                    >
-                                                        {meta.status}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant='ghost' size='icon'>
-                                                                <MoreVertical />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align='end'>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link
-                                                                    to={ROUTES.ORGANIZER_QUIZ_LIVE(
-                                                                        q.id,
-                                                                    )}
-                                                                >
-                                                                    <Play />
-                                                                    {t('dashboard.startQuiz')}
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link
-                                                                    to={ROUTES.ORGANIZER_QUIZ_EDIT(
-                                                                        q.id,
-                                                                    )}
-                                                                >
-                                                                    <Edit />
-                                                                    {t('common.edit')}
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className={styles.itemDestructive}
-                                                                onClick={() =>
-                                                                    quiz.deleteQuiz(q.id)
-                                                                }
+                                    {quiz.quizList.map((q) => (
+                                        <TableRow key={q.id}>
+                                            <TableCell className={styles.cellBold}>
+                                                {q.title}
+                                            </TableCell>
+                                            <TableCell>
+                                                {q.questionCount ?? q.questions.length}
+                                            </TableCell>
+                                            <TableCell>—</TableCell>
+                                            <TableCell className={styles.cellMuted}>—</TableCell>
+                                            <TableCell>
+                                                <span className={styles.statusBadgeActive}>
+                                                    active
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant='ghost' size='icon'>
+                                                            <MoreVertical />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align='end'>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link
+                                                                to={ROUTES.ORGANIZER_QUIZ_LIVE(
+                                                                    q.id,
+                                                                )}
                                                             >
-                                                                <Trash2 />
-                                                                {t('common.delete')}
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                                                <Play />
+                                                                {t('dashboard.startQuiz')}
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link
+                                                                to={ROUTES.ORGANIZER_QUIZ_EDIT(
+                                                                    q.id,
+                                                                )}
+                                                            >
+                                                                <Edit />
+                                                                {t('common.edit')}
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className={styles.itemDestructive}
+                                                            onClick={() => quiz.deleteQuiz(q.id)}
+                                                        >
+                                                            <Trash2 />
+                                                            {t('common.delete')}
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
