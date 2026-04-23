@@ -148,7 +148,11 @@
         "colParticipants": "Участники",
         "colLastUsed": "Последнее использование",
         "colStatus": "Статус",
-        "startQuiz": "Начать квиз"
+        "startQuiz": "Начать квиз",
+        "viewAll": "Смотреть все"
+    },
+    "quizzes": {
+        "total": "квизов всего"
     },
     "quizBuilder": {
         "editTitle": "Редактировать квиз",

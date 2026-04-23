@@ -1,13 +1,31 @@
 import { QuizStore } from '@entities/Quiz/model/quizStore';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-const INITIAL_QUIZ_COUNT = 4;
+const INITIAL_QUIZ_COUNT = 1;
+
+const FIXTURE_QUIZ = {
+    id: '1',
+    title: 'JavaScript Fundamentals',
+    description: 'Test your knowledge of JavaScript core concepts',
+    category: 'programming',
+    questions: [],
+    settings: {
+        timePerQuestion: 30,
+        scoringMode: 'standard' as const,
+        allowAnswerChanges: false,
+        randomizeQuestions: false,
+        showCorrectAnswers: 'after-each' as const,
+    },
+    createdBy: 'organizer-1',
+    createdAt: '2026-04-08T10:00:00Z',
+};
 
 describe('QuizStore', () => {
     let store: QuizStore;
 
     beforeEach(() => {
         store = new QuizStore();
+        store.addQuiz(FIXTURE_QUIZ);
     });
 
     describe('totalQuizzes', () => {

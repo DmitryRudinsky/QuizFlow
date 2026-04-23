@@ -19,7 +19,7 @@ export const OrganizerSidebar = observer(() => {
 
     const navItems = [
         { to: ROUTES.ORGANIZER_DASHBOARD, icon: <LayoutDashboard />, label: t('nav.dashboard') },
-        { to: ROUTES.ORGANIZER_QUIZ_NEW, icon: <FileQuestion />, label: t('nav.myQuizzes') },
+        { to: ROUTES.ORGANIZER_QUIZZES, icon: <FileQuestion />, label: t('nav.myQuizzes') },
         { to: ROUTES.ORGANIZER_ACCOUNT, icon: <User />, label: t('nav.account') },
     ];
 

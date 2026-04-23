@@ -6,6 +6,7 @@ import { LoginPage } from '@pages/Login/ui/LoginPage';
 import { NotFoundPage } from '@pages/NotFound/ui/NotFoundPage';
 import { OrganizerAccountPage } from '@pages/OrganizerAccount/ui/OrganizerAccountPage';
 import { OrganizerDashboard } from '@pages/OrganizerDashboard/ui/OrganizerDashboard';
+import { OrganizerQuizzesPage } from '@pages/OrganizerQuizzes/ui/OrganizerQuizzesPage';
 import { ParticipantAccountPage } from '@pages/ParticipantAccount/ui/ParticipantAccountPage';
 import { ParticipantJoinPage } from '@pages/ParticipantJoin/ui/ParticipantJoinPage';
 import { ParticipantLivePage } from '@pages/ParticipantLive/ui/ParticipantLivePage';
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
     { path: ROUTES.PRIVACY, element: <PrivacyPage /> },
     { path: ROUTES.TERMS, element: <TermsPage /> },
     { path: ROUTES.ORGANIZER_DASHBOARD, element: <OrganizerDashboard /> },
+    { path: ROUTES.ORGANIZER_QUIZZES, element: <OrganizerQuizzesPage /> },
     { path: ROUTES.ORGANIZER_QUIZ_NEW, element: <QuizBuilderPage /> },
     { path: ROUTES.ORGANIZER_QUIZ_EDIT(':id'), element: <QuizBuilderPage /> },
     { path: ROUTES.ORGANIZER_QUIZ_SETTINGS(':id'), element: <QuizSettingsPage /> },

@@ -8,6 +8,7 @@ export const ROUTES = {
     TERMS: '/terms',
 
     ORGANIZER_DASHBOARD: '/organizer/dashboard',
+    ORGANIZER_QUIZZES: '/organizer/quizzes',
     ORGANIZER_QUIZ_NEW: '/organizer/quiz/new',
     ORGANIZER_QUIZ_EDIT: (id: string) => `/organizer/quiz/${id}/edit`,
     ORGANIZER_QUIZ_SETTINGS: (id: string) => `/organizer/quiz/${id}/settings`,
