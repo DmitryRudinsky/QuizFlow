@@ -1,0 +1,51 @@
+.layout {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background);
+}
+
+.main {
+    flex: 1;
+    overflow: auto;
+}
+
+.body {
+    padding: 2rem;
+
+    & > * + * {
+        margin-top: 2rem;
+    }
+}
+
+.topRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cellBold {
+    font-weight: var(--font-weight-medium);
+}
+
+.cellMuted {
+    color: var(--muted-foreground);
+}
+
+.colNarrow {
+    width: 3rem;
+}
+
+.statusBadgeActive {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    background-color: color-mix(in srgb, var(--success) 10%, transparent);
+    color: var(--success);
+}
+
+.itemDestructive {
+    color: var(--destructive);
+}

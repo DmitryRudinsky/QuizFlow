@@ -17,9 +17,9 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 
-import styles from './OrganizerDashboard.module.scss';
+import styles from './OrganizerQuizzesPage.module.scss';
 
-export const OrganizerDashboard = observer(() => {
+export const OrganizerQuizzesPage = observer(() => {
     const { quiz, user } = useStore();
     const { t } = useTranslation();
 
@@ -40,8 +40,7 @@ export const OrganizerDashboard = observer(() => {
                 <div className={styles.body}>
                     <div className={styles.topRow}>
                         <div>
-                            <h1>{t('dashboard.title')}</h1>
-                            <p className={styles.topSubtitle}>{t('dashboard.subtitle')}</p>
+                            <h1>{t('nav.myQuizzes')}</h1>
                         </div>
                         <Link to={ROUTES.ORGANIZER_QUIZ_NEW}>
                             <Button>
@@ -51,48 +50,12 @@ export const OrganizerDashboard = observer(() => {
                         </Link>
                     </div>
 
-                    <div className={styles.statsGrid}>
-                        <StatCard
-                            title={t('dashboard.totalQuizzes')}
-                            value='24'
-                            change={t('dashboard.thisWeek')}
-                            colorClass={styles.statChangePrimary}
-                        />
-                        <StatCard
-                            title={t('dashboard.totalParticipants')}
-                            value='1,284'
-                            change={t('dashboard.vsLastWeek')}
-                            colorClass={styles.statChangeTeal}
-                        />
-                        <StatCard
-                            title={t('dashboard.activeSessions')}
-                            value='3'
-                            change={t('dashboard.liveNow')}
-                            colorClass={styles.statChangeSuccess}
-                        />
-                        <StatCard
-                            title={t('dashboard.avgCompletion')}
-                            value='87%'
-                            change={t('dashboard.improvement')}
-                            colorClass={styles.statChangePink}
-                        />
-                    </div>
-
                     <Card>
                         <CardHeader>
-                            <div className={styles.cardHeaderRow}>
-                                <div>
-                                    <CardTitle>{t('dashboard.recentQuizzes')}</CardTitle>
-                                    <CardDescription>
-                                        {t('dashboard.recentSubtitle')}
-                                    </CardDescription>
-                                </div>
-                                {quiz.quizList.length > 10 && (
-                                    <Link to={ROUTES.ORGANIZER_QUIZZES} className={styles.viewAll}>
-                                        {t('dashboard.viewAll')}
-                                    </Link>
-                                )}
-                            </div>
+                            <CardTitle>{t('nav.myQuizzes')}</CardTitle>
+                            <CardDescription>
+                                {quiz.quizList.length} {t('quizzes.total')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -107,7 +70,7 @@ export const OrganizerDashboard = observer(() => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {quiz.quizList.slice(0, 10).map((q) => (
+                                    {quiz.quizList.map((q) => (
                                         <TableRow key={q.id}>
                                             <TableCell className={styles.cellBold}>
                                                 {q.title}
@@ -171,27 +134,3 @@ export const OrganizerDashboard = observer(() => {
         </div>
     );
 });
-
-function StatCard({
-    title,
-    value,
-    change,
-    colorClass,
-}: {
-    title: string;
-    value: string;
-    change: string;
-    colorClass: string;
-}) {
-    return (
-        <Card>
-            <CardContent className={styles.cardContentPadded}>
-                <div className={styles.statInner}>
-                    <p className={styles.statTitle}>{title}</p>
-                    <p className={styles.statValue}>{value}</p>
-                    <p className={colorClass}>{change}</p>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}

@@ -1,5 +1,29 @@
 import type { Page } from '@playwright/test';
 
+export const QUIZ_FIXTURE = {
+    id: '1',
+    title: 'JavaScript Fundamentals',
+    description: 'Test your JS knowledge',
+    category: 'programming',
+    questionCount: 3,
+    createdBy: '00000000-0000-0000-0000-000000000001',
+    createdAt: '2026-01-01T00:00:00.000Z',
+};
+
+export async function mockQuizApi(page: Page) {
+    await page.route('**/api/quizzes', async (route) => {
+        if (route.request().method() === 'GET') {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify([QUIZ_FIXTURE]),
+            });
+        } else {
+            await route.continue();
+        }
+    });
+}
+
 const ORGANIZER = {
     id: '00000000-0000-0000-0000-000000000001',
     name: 'Test Organizer',

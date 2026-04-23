@@ -15,7 +15,24 @@ vi.mock('@shared/api/generated', () => ({
     deleteQuiz: vi.fn(),
 }));
 
-const INITIAL_QUIZ_COUNT = 4; // mock quizzes in QuizStore
+const INITIAL_QUIZ_COUNT = 1;
+
+const FIXTURE_QUIZ = {
+    id: '1',
+    title: 'JavaScript Fundamentals',
+    description: 'Test your knowledge of JavaScript core concepts',
+    category: 'programming',
+    questions: [],
+    settings: {
+        timePerQuestion: 30,
+        scoringMode: 'standard' as const,
+        allowAnswerChanges: false,
+        randomizeQuestions: false,
+        showCorrectAnswers: 'after-each' as const,
+    },
+    createdBy: 'organizer-1',
+    createdAt: '2026-04-08T10:00:00Z',
+};
 
 function buildValidQuiz(root: RootStore) {
     root.quizBuilder.setTitle('My Quiz');
@@ -27,6 +44,7 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
 
     beforeEach(() => {
         root = new RootStore();
+        root.quiz.addQuiz(FIXTURE_QUIZ);
     });
 
     describe('save — new quiz', () => {

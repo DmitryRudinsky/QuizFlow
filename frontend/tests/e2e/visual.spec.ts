@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { mockAuthApi } from './helpers/mockApi';
+import { mockAuthApi, mockQuizApi } from './helpers/mockApi';
 
 // Kill all CSS transitions/animations so screenshots are pixel-stable
 async function disableAnimations(page: Page) {
@@ -18,6 +18,7 @@ async function disableAnimations(page: Page) {
 
 async function loginAsOrganizer(page: Page) {
     await mockAuthApi(page);
+    await mockQuizApi(page);
     await page.goto('/login');
     await page.fill('#email', 'organizer@example.com');
     await page.fill('#password', 'Test@1');

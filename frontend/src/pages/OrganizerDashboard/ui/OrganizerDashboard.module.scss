@@ -131,3 +131,20 @@
 .itemDestructive {
     color: var(--destructive);
 }
+
+.cardHeaderRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.viewAll {
+    font-size: 0.875rem;
+    color: var(--primary);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

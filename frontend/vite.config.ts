@@ -6,6 +6,11 @@ const root = fileURLToPath(new URL('src', import.meta.url));
 
 export default defineConfig({
     plugins: [react()],
+    server: {
+        proxy: {
+            '/api': 'http://localhost:8080',
+        },
+    },
     test: {
         environment: 'happy-dom',
         globals: true,

@@ -143,6 +143,7 @@
         "improvement": "+5% improvement",
         "recentQuizzes": "Recent Quizzes",
         "recentSubtitle": "Manage and launch your quiz sessions",
+        "viewAll": "View all",
         "colTitle": "Title",
         "colQuestions": "Questions",
         "colParticipants": "Participants",
@@ -319,6 +320,9 @@
         "submitting": "Joining...",
         "errorBoth": "Please enter both room code and nickname",
         "errorCode": "Invalid room code"
+    },
+    "quizzes": {
+        "total": "quizzes total"
     },
     "states": {
         "noQuizzesTitle": "No quizzes yet",
