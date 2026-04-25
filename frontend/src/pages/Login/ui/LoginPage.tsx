@@ -67,12 +67,7 @@ export const LoginPage = observer(() => {
                             </div>
 
                             <div className={styles.fieldGroup}>
-                                <div className={styles.passwordLabelRow}>
-                                    <Label htmlFor='password'>{t('login.password')}</Label>
-                                    <Link to={ROUTES.FORGOT_PASSWORD} className={styles.forgotLink}>
-                                        {t('login.forgotPassword')}
-                                    </Link>
-                                </div>
+                                <Label htmlFor='password'>{t('login.password')}</Label>
                                 <Input
                                     id='password'
                                     type='password'

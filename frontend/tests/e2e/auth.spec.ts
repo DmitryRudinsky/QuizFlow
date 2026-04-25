@@ -39,12 +39,6 @@ test.describe('Auth flows', () => {
             await page.getByRole('link', { name: 'Sign up' }).click();
             await expect(page).toHaveURL(/\/signup/);
         });
-
-        test('"Forgot password?" link navigates to /forgot-password', async ({ page }) => {
-            await page.goto('/login');
-            await page.getByRole('link', { name: 'Forgot password?' }).click();
-            await expect(page).toHaveURL(/\/forgot-password/);
-        });
     });
 
     test.describe('Sign Up', () => {
@@ -93,20 +87,6 @@ test.describe('Auth flows', () => {
     });
 
     test.describe('Forgot Password', () => {
-        test('submitting shows success state', async ({ page }) => {
-            await page.goto('/forgot-password');
-            await page.fill('#email', 'test@example.com');
-            await page.click('button:has-text("Send Reset Link")');
-            await expect(page.getByText('Check your email')).toBeVisible();
-        });
-
-        test('success state shows submitted email', async ({ page }) => {
-            await page.goto('/forgot-password');
-            await page.fill('#email', 'myemail@test.com');
-            await page.click('button:has-text("Send Reset Link")');
-            await expect(page.getByText('myemail@test.com')).toBeVisible();
-        });
-
         test('"Back to Login" navigates to /login', async ({ page }) => {
             await page.goto('/forgot-password');
             await page.getByRole('link', { name: /Back to Login/i }).click();

@@ -5,64 +5,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shar
 import { ConfirmDialog } from '@shared/ui/ConfirmDialog';
 import { LanguageSwitcher } from '@shared/ui/LanguageSwitcher';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/ui/Table';
+import { when } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import styles from './ParticipantAccountPage.module.scss';
 
-const mockStats = {
-    totalQuizzes: 24,
-    avgScore: 76,
-    totalPoints: 18450,
-    bestRank: 1,
-};
-
-const mockHistory = [
-    {
-        id: '1',
-        quizTitle: 'JavaScript Fundamentals',
-        date: 'Apr 5, 2026',
-        score: 1200,
-        total: 1500,
-        rank: 5,
-        participants: 42,
-    },
-    {
-        id: '2',
-        quizTitle: 'React Hooks Deep Dive',
-        date: 'Apr 3, 2026',
-        score: 1650,
-        total: 2000,
-        rank: 3,
-        participants: 38,
-    },
-    {
-        id: '3',
-        quizTitle: 'CSS Grid & Flexbox',
-        date: 'Apr 1, 2026',
-        score: 900,
-        total: 1200,
-        rank: 12,
-        participants: 29,
-    },
-    {
-        id: '4',
-        quizTitle: 'TypeScript Basics',
-        date: 'Mar 30, 2026',
-        score: 1500,
-        total: 1800,
-        rank: 8,
-        participants: 55,
-    },
-];
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
 
 export const ParticipantAccountPage = observer(() => {
-    const { user, auth } = useStore();
+    const { user, auth, session } = useStore();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const currentUser = user.currentUser;
+
+    useEffect(() => {
+        return when(
+            () => Boolean(user.currentUser),
+            () => {
+                void session.fetchParticipantHistory();
+            },
+        );
+    }, [user, session]);
+
+    const history = session.participantHistory;
+    const totalPoints = history.reduce((sum, s) => sum + s.score, 0);
+    const bestRank = history.length === 0 ? null : Math.min(...history.map((s) => s.rank));
 
     return (
         <div className={styles.page}>
@@ -118,15 +94,7 @@ export const ParticipantAccountPage = observer(() => {
                             <div className={styles.statLabel}>
                                 {t('participantAccount.quizzesPlayed')}
                             </div>
-                            <div className={styles.statValue}>{mockStats.totalQuizzes}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className={styles.cardContentPadded}>
-                            <div className={styles.statLabel}>
-                                {t('participantAccount.avgScore')}
-                            </div>
-                            <div className={styles.statValue}>{mockStats.avgScore}%</div>
+                            <div className={styles.statValue}>{history.length}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -134,9 +102,7 @@ export const ParticipantAccountPage = observer(() => {
                             <div className={styles.statLabel}>
                                 {t('participantAccount.totalPoints')}
                             </div>
-                            <div className={styles.statValue}>
-                                {mockStats.totalPoints.toLocaleString()}
-                            </div>
+                            <div className={styles.statValue}>{totalPoints.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -144,7 +110,9 @@ export const ParticipantAccountPage = observer(() => {
                             <div className={styles.statLabel}>
                                 {t('participantAccount.bestRank')}
                             </div>
-                            <div className={styles.statValue}>#{mockStats.bestRank}</div>
+                            <div className={styles.statValue}>
+                                {bestRank !== null ? `#${bestRank}` : '—'}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -165,37 +133,43 @@ export const ParticipantAccountPage = observer(() => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockHistory.map((quiz) => (
-                                    <TableRow key={quiz.id}>
+                                {history.map((entry) => (
+                                    <TableRow key={`${entry.id}-${entry.createdAt}`}>
                                         <TableCell className={styles.cellBold}>
-                                            {quiz.quizTitle}
+                                            {entry.quizTitle}
                                         </TableCell>
                                         <TableCell className={styles.cellMuted}>
-                                            {quiz.date}
+                                            {formatDate(entry.createdAt)}
                                         </TableCell>
                                         <TableCell>
-                                            <div>
-                                                <div className={styles.scoreMain}>
-                                                    {quiz.score} / {quiz.total}
-                                                </div>
-                                                <div className={styles.scorePercent}>
-                                                    {Math.round((quiz.score / quiz.total) * 100)}%
-                                                </div>
+                                            <div className={styles.scoreMain}>
+                                                {entry.score} pts
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <span
                                                 className={
-                                                    quiz.rank <= 3
+                                                    entry.rank <= 3
                                                         ? styles.rankBadgeTop
                                                         : styles.rankBadgeNormal
                                                 }
                                             >
-                                                #{quiz.rank} of {quiz.participants}
+                                                #{entry.rank} of {entry.participantCount}
                                             </span>
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {history.length === 0 && (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={4}
+                                            className={styles.cellMuted}
+                                            style={{ textAlign: 'center' }}
+                                        >
+                                            No quiz history yet
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>

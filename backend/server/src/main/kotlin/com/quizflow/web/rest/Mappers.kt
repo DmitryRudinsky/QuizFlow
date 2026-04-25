@@ -5,8 +5,10 @@ import com.quizflow.api.model.QuestionTypeDto
 import com.quizflow.api.model.SessionStatusDto
 import com.quizflow.api.model.UserRoleDto
 import com.quizflow.api.response.AnswerResponse
+import com.quizflow.api.response.HostSessionSummary
 import com.quizflow.api.response.JoinSessionResponse
 import com.quizflow.api.response.LeaderboardEntryResponse
+import com.quizflow.api.response.ParticipantSessionSummary
 import com.quizflow.api.response.QuestionResponse
 import com.quizflow.api.response.QuizDetailResponse
 import com.quizflow.api.response.QuizResponse
@@ -77,6 +79,33 @@ fun SessionParticipant.toJoinResponse() = JoinSessionResponse(
     sessionId = session.id!!,
     roomCode = session.roomCode,
 )
+
+fun Session.toHostSummary(): HostSessionSummary {
+    val count = participants.size
+    val avg = if (count == 0) 0 else participants.sumOf { it.score } / count
+    return HostSessionSummary(
+        id = id!!,
+        roomCode = roomCode,
+        quizTitle = quiz.title,
+        participantCount = count,
+        avgScore = avg,
+        createdAt = createdAt.toString(),
+        status = status.name,
+    )
+}
+
+fun SessionParticipant.toParticipantSummary(): ParticipantSessionSummary {
+    val sorted = session.participants.sortedByDescending { it.score }
+    val rank = sorted.indexOfFirst { it.id == this.id } + 1
+    return ParticipantSessionSummary(
+        id = session.id!!,
+        quizTitle = session.quiz.title,
+        score = score,
+        rank = rank,
+        participantCount = sorted.size,
+        createdAt = joinedAt.toString(),
+    )
+}
 
 fun List<Pair<SessionParticipant, Int>>.toLeaderboard() = mapIndexed { index, (participant, correctCount) ->
     LeaderboardEntryResponse(

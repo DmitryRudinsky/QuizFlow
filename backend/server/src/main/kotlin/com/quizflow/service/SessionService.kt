@@ -185,6 +185,12 @@ class SessionService(
         return counts.mapValues { (_, count) -> (count * 100) / total }
     }
 
+    fun getHostedSessions(hostId: UUID): List<Session> =
+        sessionRepository.findByHostIdWithParticipants(hostId).sortedByDescending { it.createdAt }
+
+    fun getParticipatedSessions(userId: UUID): List<SessionParticipant> =
+        sessionParticipantRepository.findByUserIdWithSession(userId).sortedByDescending { it.joinedAt }
+
     fun getSessionByRoomCode(roomCode: String): Session {
         return sessionRepository.findByRoomCode(roomCode)
             ?: throw NotFoundException("Session", roomCode)

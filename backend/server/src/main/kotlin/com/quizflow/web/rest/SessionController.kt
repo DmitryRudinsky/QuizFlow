@@ -4,8 +4,10 @@ import com.quizflow.api.request.CreateSessionRequest
 import com.quizflow.api.request.JoinSessionRequest
 import com.quizflow.api.request.SubmitAnswerRequest
 import com.quizflow.api.response.AnswerResultResponse
+import com.quizflow.api.response.HostSessionSummary
 import com.quizflow.api.response.JoinSessionResponse
 import com.quizflow.api.response.LeaderboardEntryResponse
+import com.quizflow.api.response.ParticipantSessionSummary
 import com.quizflow.api.response.SessionResponse
 import com.quizflow.domain.User
 import com.quizflow.service.SessionService
@@ -143,4 +145,12 @@ class SessionController(
     @GetMapping("/{roomCode}/leaderboard")
     fun getLeaderboard(@PathVariable roomCode: String): List<LeaderboardEntryResponse> =
         sessionService.getLeaderboardWithCounts(roomCode).toLeaderboard()
+
+    @GetMapping("/hosted")
+    fun getHostedSessions(@AuthenticationPrincipal user: User): List<HostSessionSummary> =
+        sessionService.getHostedSessions(user.id!!).map { it.toHostSummary() }
+
+    @GetMapping("/participated")
+    fun getParticipatedSessions(@AuthenticationPrincipal user: User): List<ParticipantSessionSummary> =
+        sessionService.getParticipatedSessions(user.id!!).map { it.toParticipantSummary() }
 }

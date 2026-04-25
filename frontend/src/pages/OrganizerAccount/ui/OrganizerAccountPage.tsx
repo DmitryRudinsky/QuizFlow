@@ -3,52 +3,43 @@ import { useTranslation } from '@shared/lib/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/ui/Table';
 import { OrganizerSidebar } from '@widgets/OrganizerSidebar/ui/OrganizerSidebar';
+import { when } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 
 import styles from './OrganizerAccountPage.module.scss';
 
-const mockStats = {
-    totalQuizzes: 24,
-    totalParticipants: 1284,
-    totalSessions: 87,
-    avgScore: 76,
-};
-
-const mockSessions = [
-    {
-        id: '1',
-        quizTitle: 'JavaScript Fundamentals',
-        date: 'Apr 5, 2026',
-        participants: 42,
-        avgScore: 78,
-    },
-    {
-        id: '2',
-        quizTitle: 'React Hooks Deep Dive',
-        date: 'Apr 3, 2026',
-        participants: 38,
-        avgScore: 82,
-    },
-    {
-        id: '3',
-        quizTitle: 'CSS Grid & Flexbox',
-        date: 'Apr 1, 2026',
-        participants: 29,
-        avgScore: 71,
-    },
-    {
-        id: '4',
-        quizTitle: 'TypeScript Basics',
-        date: 'Mar 30, 2026',
-        participants: 55,
-        avgScore: 85,
-    },
-];
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
 
 export const OrganizerAccountPage = observer(() => {
-    const { user } = useStore();
+    const { user, quiz, session } = useStore();
     const { t } = useTranslation();
     const currentUser = user.currentUser;
+
+    useEffect(() => {
+        return when(
+            () => Boolean(user.currentUser),
+            () => {
+                void quiz.fetchByUser();
+                void session.fetchHostedSessions();
+            },
+        );
+    }, [user, quiz, session]);
+
+    const totalParticipants = session.hostSessions.reduce((sum, s) => sum + s.participantCount, 0);
+    const avgScore =
+        session.hostSessions.length === 0
+            ? 0
+            : Math.round(
+                  session.hostSessions.reduce((sum, s) => sum + s.avgScore, 0) /
+                      session.hostSessions.length,
+              );
 
     return (
         <div className={styles.layout}>
@@ -95,7 +86,7 @@ export const OrganizerAccountPage = observer(() => {
                                 <div className={styles.statLabel}>
                                     {t('organizerAccount.totalQuizzes')}
                                 </div>
-                                <div className={styles.statValue}>{mockStats.totalQuizzes}</div>
+                                <div className={styles.statValue}>{quiz.quizList.length}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -104,7 +95,7 @@ export const OrganizerAccountPage = observer(() => {
                                     {t('organizerAccount.totalParticipants')}
                                 </div>
                                 <div className={styles.statValue}>
-                                    {mockStats.totalParticipants.toLocaleString()}
+                                    {totalParticipants.toLocaleString()}
                                 </div>
                             </CardContent>
                         </Card>
@@ -113,7 +104,9 @@ export const OrganizerAccountPage = observer(() => {
                                 <div className={styles.statLabel}>
                                     {t('organizerAccount.sessionsHosted')}
                                 </div>
-                                <div className={styles.statValue}>{mockStats.totalSessions}</div>
+                                <div className={styles.statValue}>
+                                    {session.hostSessions.length}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -121,7 +114,7 @@ export const OrganizerAccountPage = observer(() => {
                                 <div className={styles.statLabel}>
                                     {t('organizerAccount.avgScore')}
                                 </div>
-                                <div className={styles.statValue}>{mockStats.avgScore}%</div>
+                                <div className={styles.statValue}>{avgScore} pts</div>
                             </CardContent>
                         </Card>
                     </div>
@@ -144,18 +137,29 @@ export const OrganizerAccountPage = observer(() => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {mockSessions.map((session) => (
-                                        <TableRow key={session.id}>
+                                    {session.hostSessions.map((s) => (
+                                        <TableRow key={s.id}>
                                             <TableCell className={styles.cellBold}>
-                                                {session.quizTitle}
+                                                {s.quizTitle}
                                             </TableCell>
                                             <TableCell className={styles.cellMuted}>
-                                                {session.date}
+                                                {formatDate(s.createdAt)}
                                             </TableCell>
-                                            <TableCell>{session.participants}</TableCell>
-                                            <TableCell>{session.avgScore}%</TableCell>
+                                            <TableCell>{s.participantCount}</TableCell>
+                                            <TableCell>{s.avgScore} pts</TableCell>
                                         </TableRow>
                                     ))}
+                                    {session.hostSessions.length === 0 && (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
+                                                className={styles.cellMuted}
+                                                style={{ textAlign: 'center' }}
+                                            >
+                                                No sessions yet
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>

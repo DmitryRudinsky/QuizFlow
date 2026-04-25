@@ -23,17 +23,23 @@ class JwtAuthFilter(
     ) {
         val token = request.cookies?.find { it.name == "jwt" }?.value
 
-        if (token != null && jwtService.isValid(token)) {
-            val userId = jwtService.extractUserId(token)
-            if (userId != null) {
-                userRepository.findById(userId).ifPresent { user ->
-                    val auth = UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        listOf(SimpleGrantedAuthority("ROLE_${user.role.name}")),
-                    )
-                    SecurityContextHolder.getContext().authentication = auth
+        if (token != null) {
+            try {
+                if (jwtService.isValid(token)) {
+                    val userId = jwtService.extractUserId(token)
+                    if (userId != null) {
+                        userRepository.findById(userId).ifPresent { user ->
+                            val auth = UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                listOf(SimpleGrantedAuthority("ROLE_${user.role.name}")),
+                            )
+                            SecurityContextHolder.getContext().authentication = auth
+                        }
+                    }
                 }
+            } catch (_: Exception) {
+                // expired or malformed token — just skip, security rules decide access
             }
         }
 

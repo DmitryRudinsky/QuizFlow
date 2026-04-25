@@ -1,11 +1,18 @@
 import type { RootStore } from '@app/model/rootStore';
 import type { Participant } from '@entities/Participant/model/types';
 import type { Question } from '@entities/Question/model/types';
-import type { AnswerResultResponse, LeaderboardEntryResponse } from '@shared/api/generated';
+import type {
+    AnswerResultResponse,
+    HostSessionSummary,
+    LeaderboardEntryResponse,
+    ParticipantSessionSummary,
+} from '@shared/api/generated';
 import {
     createSession as createSessionApi,
     endSession as endSessionApi,
+    getHostedSessions,
     getLeaderboard,
+    getParticipatedSessions,
     joinSession as joinSessionApi,
     nextQuestion as nextQuestionApi,
     startSession as startSessionApi,
@@ -47,6 +54,8 @@ export class SessionStore {
     answerStats: Record<string, number> = {};
     participantAnswered: Record<string, boolean> = {};
     leaderboard: LeaderboardEntryResponse[] = [];
+    hostSessions: HostSessionSummary[] = [];
+    participantHistory: ParticipantSessionSummary[] = [];
 
     private timer: ReturnType<typeof setInterval> | null = null;
     private stompClient: Client | null = null;
@@ -345,6 +354,28 @@ export class SessionStore {
         }
     }
 
+    async fetchHostedSessions(): Promise<void> {
+        try {
+            const res = await getHostedSessions();
+            runInAction(() => {
+                this.hostSessions = res.data;
+            });
+        } catch {
+            // keep existing
+        }
+    }
+
+    async fetchParticipantHistory(): Promise<void> {
+        try {
+            const res = await getParticipatedSessions();
+            runInAction(() => {
+                this.participantHistory = res.data;
+            });
+        } catch {
+            // keep existing
+        }
+    }
+
     async fetchLeaderboard(roomCodeOverride?: string): Promise<void> {
         const code = roomCodeOverride ?? this.roomCode;
         if (!code) {
@@ -377,5 +408,7 @@ export class SessionStore {
         this.answerStats = {};
         this.participantAnswered = {};
         this.leaderboard = [];
+        this.hostSessions = [];
+        this.participantHistory = [];
     }
 }
