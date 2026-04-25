@@ -30,7 +30,7 @@ class SecurityConfig(
         .exceptionHandling { it.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) }
         .authorizeHttpRequests { auth ->
             auth.requestMatchers("/api/auth/**").permitAll()
-            auth.requestMatchers("/ws/**").permitAll()
+            auth.requestMatchers("/ws/**", "/ws-stomp/**").permitAll()
             auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
             auth.anyRequest().authenticated()
         }

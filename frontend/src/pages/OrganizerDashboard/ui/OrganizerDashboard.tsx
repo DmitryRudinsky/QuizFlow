@@ -125,14 +125,18 @@ export const OrganizerDashboard = observer(() => {
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant='ghost' size='icon'>
+                                                        <Button
+                                                            className={styles.dropdownButton}
+                                                            variant='ghost'
+                                                            size='icon'
+                                                        >
                                                             <MoreVertical />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align='end'>
                                                         <DropdownMenuItem asChild>
                                                             <Link
-                                                                to={ROUTES.ORGANIZER_QUIZ_LIVE(
+                                                                to={ROUTES.ORGANIZER_QUIZ_SETTINGS(
                                                                     q.id,
                                                                 )}
                                                             >

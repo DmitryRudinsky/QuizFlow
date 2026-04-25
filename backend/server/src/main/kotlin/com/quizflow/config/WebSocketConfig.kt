@@ -19,5 +19,9 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
             .setAllowedOriginPatterns("*")
             .withSockJS()
+
+        // Native WebSocket endpoint for browser clients using @stomp/stompjs without SockJS
+        registry.addEndpoint("/ws-stomp")
+            .setAllowedOriginPatterns("*")
     }
 }

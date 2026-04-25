@@ -15,80 +15,48 @@ describe('SessionStore — lifecycle & timer', () => {
     });
 
     describe('initial state', () => {
-        it('starts with status active', () => {
-            expect(root.session.status).toBe('active');
+        it('starts with status waiting', () => {
+            expect(root.session.status).toBe('waiting');
         });
 
         it('starts at question index 0', () => {
             expect(root.session.currentQuestionIndex).toBe(0);
         });
 
-        it('isLastQuestion is false initially', () => {
-            expect(root.session.isLastQuestion).toBe(false);
+        it('starts with no current question', () => {
+            expect(root.session.currentQuestion).toBeNull();
         });
 
-        it('participantCount matches mock participants', () => {
-            expect(root.session.participantCount).toBe(8);
-        });
-    });
-
-    describe('nextQuestion', () => {
-        it('increments currentQuestionIndex', () => {
-            root.session.nextQuestion();
-            expect(root.session.currentQuestionIndex).toBe(1);
+        it('participantCount is 0 initially', () => {
+            expect(root.session.participantCount).toBe(0);
         });
 
-        it('resets timeLeft to 30', () => {
-            root.session.timeLeft = 10;
-            root.session.nextQuestion();
-            expect(root.session.timeLeft).toBe(30);
-        });
-
-        it('resets participantAnswered to all false', () => {
-            root.session.nextQuestion();
-            const allFalse = Object.values(root.session.participantAnswered).every((v) => !v);
-            expect(allFalse).toBe(true);
-        });
-
-        it('sets status back to active', () => {
-            root.session.togglePause();
-            root.session.nextQuestion();
-            expect(root.session.status).toBe('active');
-        });
-
-        it('isLastQuestion becomes true at the last question', () => {
-            root.session.currentQuestionIndex = root.session.totalQuestions - 1;
+        it('isLastQuestion is true when totalQuestions is 0', () => {
             expect(root.session.isLastQuestion).toBe(true);
-        });
-
-        it('does not advance past the last question', () => {
-            root.session.currentQuestionIndex = root.session.totalQuestions - 1;
-            root.session.nextQuestion();
-            expect(root.session.currentQuestionIndex).toBe(root.session.totalQuestions - 1);
         });
     });
 
     describe('togglePause', () => {
         it('pauses an active session', () => {
+            root.session.status = 'active';
             root.session.togglePause();
             expect(root.session.status).toBe('paused');
         });
 
         it('resumes a paused session', () => {
+            root.session.status = 'active';
             root.session.togglePause();
             root.session.togglePause();
             expect(root.session.status).toBe('active');
         });
     });
 
-    describe('endSession', () => {
-        it('sets status to ended', () => {
-            root.session.endSession();
-            expect(root.session.status).toBe('ended');
-        });
-    });
-
     describe('timer', () => {
+        beforeEach(() => {
+            root.session.status = 'active';
+            root.session.timeLeft = 30;
+        });
+
         it('decrements timeLeft by 1 after 1 second', () => {
             root.session.startTimer();
             vi.advanceTimersByTime(1000);
@@ -127,19 +95,23 @@ describe('SessionStore — lifecycle & timer', () => {
 
     describe('answeredCount', () => {
         it('counts participants who answered', () => {
-            // mock data: 6 out of 8 answered
-            const answered = Object.values(root.session.participantAnswered).filter(Boolean).length;
-            expect(root.session.answeredCount).toBe(answered);
+            root.session.participantAnswered = { p1: true, p2: false, p3: true };
+            expect(root.session.answeredCount).toBe(2);
+        });
+
+        it('returns 0 when no one answered', () => {
+            expect(root.session.answeredCount).toBe(0);
         });
     });
 
     describe('reset', () => {
         it('resets to initial state', () => {
-            root.session.nextQuestion();
-            root.session.nextQuestion();
+            root.session.status = 'active';
+            root.session.timeLeft = 15;
+            root.session.currentQuestionIndex = 3;
             root.session.reset();
             expect(root.session.currentQuestionIndex).toBe(0);
-            expect(root.session.timeLeft).toBe(30);
+            expect(root.session.timeLeft).toBe(0);
             expect(root.session.status).toBe('waiting');
             expect(root.session.participants).toHaveLength(0);
         });

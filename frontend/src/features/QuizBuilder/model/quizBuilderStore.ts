@@ -1,6 +1,11 @@
 import type { RootStore } from '@app/model/rootStore';
 import type { Answer, Question } from '@entities/Question/model/types';
 import type { QuizSettings } from '@entities/Quiz/model/types';
+import {
+    addQuestion as addQuestionApi,
+    createQuiz,
+    updateQuiz as updateQuizApi,
+} from '@shared/api/generated';
 import { makeAutoObservable } from 'mobx';
 
 const DEFAULT_SETTINGS: QuizSettings = {
@@ -129,8 +134,18 @@ export class QuizBuilderStore {
         if (!question) {
             return;
         }
+        const isSingleAndMarkingCorrect =
+            question.answerType === 'single' && updates.isCorrect === true;
         this.updateQuestion(questionId, {
-            answers: question.answers.map((a) => (a.id === answerId ? { ...a, ...updates } : a)),
+            answers: question.answers.map((a) => {
+                if (a.id === answerId) {
+                    return { ...a, ...updates };
+                }
+                if (isSingleAndMarkingCorrect) {
+                    return { ...a, isCorrect: false };
+                }
+                return a;
+            }),
         });
     }
 
@@ -144,29 +159,48 @@ export class QuizBuilderStore {
         });
     }
 
-    save(): boolean {
+    async save(): Promise<boolean> {
         if (!this.quizTitle || this.questions.length === 0) {
             return false;
         }
 
-        const quizData = {
-            title: this.quizTitle,
-            description: this.description,
-            category: this.category,
-            questions: this.questions,
-            settings: this.settings,
-            createdBy: this.root.user.currentUser?.id ?? 'unknown',
-            createdAt: new Date().toISOString(),
-        };
+        try {
+            let quizId = this.quizId;
 
-        if (this.quizId) {
-            this.root.quiz.updateQuiz(this.quizId, quizData);
-        } else {
-            this.root.quiz.addQuiz({
-                id: Date.now().toString(),
-                ...quizData,
-            });
+            if (!quizId) {
+                const res = await createQuiz({
+                    title: this.quizTitle,
+                    description: this.description || undefined,
+                    category: this.category || undefined,
+                });
+                quizId = res.data.id;
+            } else {
+                await updateQuizApi(quizId, {
+                    title: this.quizTitle,
+                    description: this.description || undefined,
+                    category: this.category || undefined,
+                });
+            }
+
+            const newQuestions = this.questions.filter((q) => !q.id.includes('-'));
+            for (const question of newQuestions) {
+                await addQuestionApi(quizId, {
+                    questionText: question.questionText,
+                    type: question.type,
+                    answerType: question.answerType,
+                    timeLimit: question.timeLimit,
+                    points: question.points,
+                    answers: question.answers.map((a) => ({
+                        text: a.text,
+                        isCorrect: a.isCorrect,
+                    })),
+                });
+            }
+
+            await this.root.quiz.fetchById(quizId);
+            return true;
+        } catch {
+            return false;
         }
-        return true;
     }
 }

@@ -64,9 +64,11 @@ class SessionWebSocketController(
 
     private fun handleNext(roomCode: String, command: SessionCommand) {
         val session = sessionService.nextQuestion(command.hostId, roomCode)
-        val index = session.currentQuestionIndex
+        // currentQuestionIndex starts at 0 and is incremented before this call,
+        // so the 0-based array index is (currentQuestionIndex - 1)
+        val questionIndex = session.currentQuestionIndex - 1
 
-        if (index >= session.quiz.questions.size) {
+        if (questionIndex >= session.quiz.questions.size) {
             sessionService.endSession(command.hostId, roomCode)
             messaging.convertAndSend(
                 "/topic/session/$roomCode",
@@ -75,10 +77,10 @@ class SessionWebSocketController(
             return
         }
 
-        val question = session.quiz.questions[index]
+        val question = session.quiz.questions[questionIndex]
 
         val payload = QuestionPayload(
-            questionIndex = index,
+            questionIndex = questionIndex,
             totalQuestions = session.quiz.questions.size,
             questionId = question.id!!,
             questionText = question.questionText,

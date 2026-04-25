@@ -8,6 +8,7 @@ import { Label } from '@shared/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/Select';
 import { Textarea } from '@shared/ui/Textarea';
 import {
+    AlertTriangle,
     ArrowLeft,
     FileQuestion,
     GripVertical,
@@ -27,24 +28,28 @@ import styles from './QuizBuilderPage.module.scss';
 export const QuizBuilderPage = observer(() => {
     const { id: quizId } = useParams();
     const navigate = useNavigate();
-    const { quizBuilder } = useStore();
+    const { quiz, quizBuilder } = useStore();
     const { t } = useTranslation();
     const isEditing = !!quizId;
 
     useEffect(() => {
         if (isEditing && quizId) {
-            quizBuilder.loadForEdit(quizId);
+            const load = async () => {
+                await quiz.fetchById(quizId);
+                quizBuilder.loadForEdit(quizId);
+            };
+            void load();
         } else {
             quizBuilder.reset();
         }
-    }, [quizId, isEditing, quizBuilder]);
+    }, [quizId, isEditing, quiz, quizBuilder]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!quizBuilder.quizTitle || quizBuilder.questions.length === 0) {
             toast.error('Please add a title and at least one question');
             return;
         }
-        const success = quizBuilder.save();
+        const success = await quizBuilder.save();
         if (success) {
             toast.success('Quiz saved successfully!');
             setTimeout(() => navigate(ROUTES.ORGANIZER_DASHBOARD), 500);
@@ -91,6 +96,13 @@ export const QuizBuilderPage = observer(() => {
                     </div>
                 </div>
             </header>
+
+            {isEditing && (
+                <div className={styles.warningBanner}>
+                    <AlertTriangle className={styles.warningIcon} />
+                    <span>{t('quizBuilder.editCorrectAnswersWarning')}</span>
+                </div>
+            )}
 
             <div className={styles.body}>
                 <div className={styles.grid}>
@@ -339,6 +351,12 @@ export const QuizBuilderPage = observer(() => {
                                                                 'single'
                                                                     ? 'radio'
                                                                     : 'checkbox'
+                                                            }
+                                                            name={
+                                                                currentQuestion.answerType ===
+                                                                'single'
+                                                                    ? `correct-${currentQuestion.id}`
+                                                                    : undefined
                                                             }
                                                             checked={answer.isCorrect}
                                                             onChange={(e) =>

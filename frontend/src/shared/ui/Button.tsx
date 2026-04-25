@@ -10,16 +10,14 @@ interface ButtonProps extends React.ComponentProps<'button'> {
     asChild?: boolean;
 }
 
-function Button({
-    className,
-    variant = 'default',
-    size = 'default',
-    asChild = false,
-    ...props
-}: ButtonProps) {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    { className, variant = 'default', size = 'default', asChild = false, ...props },
+    ref,
+) {
     const Comp = asChild ? Slot : 'button';
     return (
         <Comp
+            ref={ref}
             data-slot='button'
             data-variant={variant}
             data-size={size}
@@ -27,7 +25,7 @@ function Button({
             {...props}
         />
     );
-}
+});
 
 export { Button };
 export type { ButtonVariant, ButtonSize };
