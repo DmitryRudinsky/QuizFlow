@@ -10,6 +10,7 @@ import com.quizflow.api.response.SessionResponse
 import com.quizflow.domain.User
 import com.quizflow.service.SessionService
 import com.quizflow.web.ws.messages.AnswerOption
+import com.quizflow.web.ws.messages.AnswerStatsPayload
 import com.quizflow.web.ws.messages.EventType
 import com.quizflow.web.ws.messages.QuestionPayload
 import com.quizflow.web.ws.messages.SessionEvent
@@ -63,9 +64,23 @@ class SessionController(
         @RequestBody request: SubmitAnswerRequest,
     ): AnswerResultResponse {
         val answer = sessionService.submitAnswer(request.participantId, request.questionId, request.answerIds)
-        val correctAnswerIds = sessionService.getSessionByRoomCode(roomCode).quiz.questions
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
+        val correctAnswerIds = session.quiz.questions
             .find { it.id == request.questionId }!!
             .answers.filter { it.isCorrect }.map { it.id!! }
+
+        val stats = sessionService.getAnswerStats(roomCode, request.questionId)
+        messaging.convertAndSend(
+            "/topic/session/$roomCode",
+            SessionEvent(
+                type = EventType.ANSWER_SUBMITTED,
+                payload = AnswerStatsPayload(
+                    questionId = request.questionId,
+                    participantId = request.participantId,
+                    stats = stats,
+                ),
+            ),
+        )
 
         return AnswerResultResponse(
             isCorrect = answer.isCorrect,
@@ -79,10 +94,14 @@ class SessionController(
         @PathVariable roomCode: String,
         @AuthenticationPrincipal user: User,
     ): SessionResponse {
-        val session = sessionService.nextQuestion(user.id!!, roomCode)
-        val questionIndex = session.currentQuestionIndex - 1
+        sessionService.nextQuestion(user.id!!, roomCode)
 
-        if (questionIndex >= session.quiz.questions.size) {
+        // Reload with quiz+questions+answers eagerly fetched to avoid lazy-load issues
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
+        val questionIndex = session.currentQuestionIndex - 1
+        val questions = session.quiz.questions
+
+        if (questionIndex >= questions.size) {
             sessionService.endSession(user.id!!, roomCode)
             messaging.convertAndSend(
                 "/topic/session/$roomCode",
@@ -91,10 +110,10 @@ class SessionController(
             return session.toResponse()
         }
 
-        val question = session.quiz.questions[questionIndex]
+        val question = questions[questionIndex]
         val payload = QuestionPayload(
             questionIndex = questionIndex,
-            totalQuestions = session.quiz.questions.size,
+            totalQuestions = questions.size,
             questionId = question.id!!,
             questionText = question.questionText,
             answers = question.answers.map { AnswerOption(id = it.id!!, text = it.text) },
@@ -123,5 +142,5 @@ class SessionController(
 
     @GetMapping("/{roomCode}/leaderboard")
     fun getLeaderboard(@PathVariable roomCode: String): List<LeaderboardEntryResponse> =
-        sessionService.getLeaderboard(roomCode).toLeaderboard()
+        sessionService.getLeaderboardWithCounts(roomCode).toLeaderboard()
 }

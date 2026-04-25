@@ -33,7 +33,7 @@ class SessionWebSocketController(
             answerIds = message.answerIds,
         )
 
-        val session = sessionService.getSessionByRoomCode(roomCode)
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
         val question = session.quiz.questions.find { it.id == message.questionId }!!
         val correctAnswerIds = question.answers.filter { it.isCorrect }.map { it.id!! }
 
@@ -63,12 +63,13 @@ class SessionWebSocketController(
     }
 
     private fun handleNext(roomCode: String, command: SessionCommand) {
-        val session = sessionService.nextQuestion(command.hostId, roomCode)
-        // currentQuestionIndex starts at 0 and is incremented before this call,
-        // so the 0-based array index is (currentQuestionIndex - 1)
-        val questionIndex = session.currentQuestionIndex - 1
+        sessionService.nextQuestion(command.hostId, roomCode)
 
-        if (questionIndex >= session.quiz.questions.size) {
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
+        val questionIndex = session.currentQuestionIndex - 1
+        val questions = session.quiz.questions
+
+        if (questionIndex >= questions.size) {
             sessionService.endSession(command.hostId, roomCode)
             messaging.convertAndSend(
                 "/topic/session/$roomCode",
@@ -77,11 +78,11 @@ class SessionWebSocketController(
             return
         }
 
-        val question = session.quiz.questions[questionIndex]
+        val question = questions[questionIndex]
 
         val payload = QuestionPayload(
             questionIndex = questionIndex,
-            totalQuestions = session.quiz.questions.size,
+            totalQuestions = questions.size,
             questionId = question.id!!,
             questionText = question.questionText,
             answers = question.answers.map { AnswerOption(id = it.id!!, text = it.text) },

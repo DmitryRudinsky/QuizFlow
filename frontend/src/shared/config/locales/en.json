@@ -238,7 +238,13 @@
         "resume": "Resume",
         "pause": "Pause",
         "nextQuestion": "Next Question",
-        "showResults": "Show Results"
+        "showResults": "Show Results",
+        "startQuiz": "Start Quiz",
+        "connecting": "Connecting...",
+        "lobbyJoinAt": "Join at",
+        "lobbyEnterCode": "Enter code",
+        "lobbyParticipants": "Participants ({count})",
+        "lobbyWaiting": "No one has joined yet..."
     },
     "organizerAccount": {
         "title": "Account",

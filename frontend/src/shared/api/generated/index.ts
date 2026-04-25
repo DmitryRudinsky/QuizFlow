@@ -173,6 +173,7 @@ export interface LeaderboardEntryResponse {
     nickname: string;
     score: number;
     rank: number;
+    correctCount: number;
 }
 
 export interface QuizResponse {

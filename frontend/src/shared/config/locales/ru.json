@@ -241,7 +241,13 @@
         "resume": "Продолжить",
         "pause": "Пауза",
         "nextQuestion": "Следующий вопрос",
-        "showResults": "Показать результаты"
+        "showResults": "Показать результаты",
+        "startQuiz": "Начать квиз",
+        "connecting": "Подключение...",
+        "lobbyJoinAt": "Заходите на",
+        "lobbyEnterCode": "Введите код",
+        "lobbyParticipants": "Участники ({count})",
+        "lobbyWaiting": "Никто ещё не присоединился..."
     },
     "organizerAccount": {
         "title": "Аккаунт",

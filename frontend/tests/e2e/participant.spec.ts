@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { mockSessionApi, mockStompWebSocket } from './helpers/mockApi';
+
 test.describe('Participant flows', () => {
     test.describe('Join page', () => {
         test.beforeEach(async ({ page }) => {
@@ -23,6 +25,7 @@ test.describe('Participant flows', () => {
         });
 
         test('valid join navigates to participant live page', async ({ page }) => {
+            await mockSessionApi(page, 'ABC-123');
             await page.fill('#roomCode', 'ABC-123');
             await page.fill('#nickname', 'Alice');
             await page.getByRole('button', { name: 'Join Quiz' }).click();
@@ -39,7 +42,16 @@ test.describe('Participant flows', () => {
 
     test.describe('Participant Live page', () => {
         test.beforeEach(async ({ page }) => {
-            await page.goto('/quiz/ABC-123/live');
+            await mockStompWebSocket(page);
+            await mockSessionApi(page, 'ABC-123');
+            // Go through the join flow so session.participantId is set (needed for submitAnswer)
+            await page.goto('/join');
+            await page.fill('#roomCode', 'ABC-123');
+            await page.fill('#nickname', 'Alice');
+            await page.getByRole('button', { name: 'Join Quiz' }).click();
+            await page.waitForURL('**/quiz/ABC-123/live');
+            // Wait for QUESTION_STARTED to arrive and render the question
+            await page.waitForSelector('button:has-text("Submit Answer")', { timeout: 5000 });
         });
 
         test('shows question text', async ({ page }) => {
@@ -49,7 +61,6 @@ test.describe('Participant flows', () => {
         });
 
         test('shows 4 answer options', async ({ page }) => {
-            // Answer buttons: null, object, undefined, number
             await expect(page.getByRole('button', { name: 'null' })).toBeVisible();
             await expect(page.getByRole('button', { name: 'object' })).toBeVisible();
             await expect(page.getByRole('button', { name: 'undefined' })).toBeVisible();
@@ -90,7 +101,10 @@ test.describe('Participant flows', () => {
 
     test.describe('Results page', () => {
         test.beforeEach(async ({ page }) => {
+            await mockSessionApi(page, 'ABC-123');
             await page.goto('/quiz/ABC-123/results');
+            // Wait for leaderboard to load
+            await page.waitForSelector('text=1st', { timeout: 5000 });
         });
 
         test('renders "Quiz Complete!" heading', async ({ page }) => {
@@ -108,7 +122,6 @@ test.describe('Participant flows', () => {
         });
 
         test('"Back to Home" navigates to /', async ({ page }) => {
-            // ResultsLeaderboard uses navigate() inside a <Button>, not a <Link>
             await page.getByRole('button', { name: /Back to Home/i }).click();
             await expect(page).toHaveURL('/');
         });
@@ -116,6 +129,16 @@ test.describe('Participant flows', () => {
         test('"View My Stats" navigates to /participant/account', async ({ page }) => {
             await page.getByRole('button', { name: /View My Stats/i }).click();
             await expect(page).toHaveURL(/\/participant\/account/);
+        });
+    });
+
+    test.describe('Results page — no leaderboard data', () => {
+        test.beforeEach(async ({ page }) => {
+            await page.goto('/quiz/ABC-123/results');
+        });
+
+        test('renders "Quiz Complete!" heading without data', async ({ page }) => {
+            await expect(page.getByRole('heading', { name: 'Quiz Complete!' })).toBeVisible();
         });
     });
 

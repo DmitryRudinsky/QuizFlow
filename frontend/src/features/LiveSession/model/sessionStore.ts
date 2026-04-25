@@ -36,12 +36,14 @@ const WS_URL = import.meta.env.VITE_WS_URL ?? 'ws://localhost:5173/ws-stomp';
 export class SessionStore {
     roomCode: string | null = null;
     participantId: string | null = null;
+    participantNickname: string | null = null;
     participants: Participant[] = [];
     currentQuestion: Question | null = null;
     currentQuestionIndex = 0;
     totalQuestions = 0;
     timeLeft = 0;
     status: SessionStatus = 'waiting';
+    wsConnected = false;
     answerStats: Record<string, number> = {};
     participantAnswered: Record<string, boolean> = {};
     leaderboard: LeaderboardEntryResponse[] = [];
@@ -101,25 +103,45 @@ export class SessionStore {
     }
 
     connect(roomCode: string): void {
-        if (this.stompClient?.active) {
+        if (this.stompClient?.active && this.roomCode === roomCode) {
             return;
+        }
+
+        if (this.stompClient?.active) {
+            this.stompClient.deactivate();
+            this.stompClient = null;
         }
 
         runInAction(() => {
             this.roomCode = roomCode;
+            this.wsConnected = false;
         });
 
         const client = new Client({
             brokerURL: WS_URL,
             reconnectDelay: 5000,
             onConnect: () => {
+                console.log('[WS] connected, subscribing to /topic/session/' + roomCode);
+                runInAction(() => {
+                    this.wsConnected = true;
+                });
                 client.subscribe(`/topic/session/${roomCode}`, (message) => {
+                    console.log('[WS] message received:', message.body);
                     try {
                         const event = JSON.parse(message.body) as SessionEvent;
                         this.handleEvent(event);
-                    } catch {
-                        // ignore malformed messages
+                    } catch (e) {
+                        console.error('[WS] handleEvent error:', e, message.body);
                     }
+                });
+            },
+            onStompError: (frame) => {
+                console.error('[WS] STOMP error:', frame);
+            },
+            onDisconnect: () => {
+                console.warn('[WS] disconnected');
+                runInAction(() => {
+                    this.wsConnected = false;
                 });
             },
         });
@@ -131,6 +153,7 @@ export class SessionStore {
     disconnect(): void {
         this.stompClient?.deactivate();
         this.stompClient = null;
+        this.wsConnected = false;
     }
 
     private handleEvent(event: SessionEvent): void {
@@ -163,6 +186,18 @@ export class SessionStore {
                 this.startTimer();
                 break;
             }
+            case 'ANSWER_SUBMITTED': {
+                const p = event.payload as {
+                    questionId: string;
+                    participantId: string;
+                    stats: Record<string, number>;
+                };
+                runInAction(() => {
+                    this.answerStats = p.stats;
+                    this.participantAnswered[p.participantId] = true;
+                });
+                break;
+            }
             case 'SESSION_ENDED':
                 runInAction(() => {
                     this.status = 'ended';
@@ -192,8 +227,8 @@ export class SessionStore {
         }
         try {
             await nextQuestionApi(this.roomCode);
-        } catch {
-            // error is broadcast via WebSocket; REST errors are non-critical
+        } catch (e) {
+            console.error('[Session] sendNextQuestion failed:', e);
         }
     }
 
@@ -203,8 +238,8 @@ export class SessionStore {
         }
         try {
             await endSessionApi(this.roomCode);
-        } catch {
-            // error is broadcast via WebSocket; REST errors are non-critical
+        } catch (e) {
+            console.error('[Session] sendEndSession failed:', e);
         }
     }
 
@@ -212,6 +247,16 @@ export class SessionStore {
         try {
             const res = await createSessionApi({ quizId });
             runInAction(() => {
+                // Reset stale state from any previous session
+                this.currentQuestion = null;
+                this.currentQuestionIndex = 0;
+                this.totalQuestions = 0;
+                this.timeLeft = 0;
+                this.participants = [];
+                this.answerStats = {};
+                this.participantAnswered = {};
+                this.leaderboard = [];
+                // Apply new session data
                 this.roomCode = res.data.roomCode;
                 this.status = res.data.status as SessionStatus;
             });
@@ -239,8 +284,20 @@ export class SessionStore {
         try {
             const res = await joinSessionApi(roomCode, { nickname });
             runInAction(() => {
+                // Reset all stale state from a previous session before applying new data
+                this.currentQuestion = null;
+                this.currentQuestionIndex = 0;
+                this.totalQuestions = 0;
+                this.timeLeft = 0;
+                this.status = 'waiting';
+                this.participants = [];
+                this.answerStats = {};
+                this.participantAnswered = {};
+                this.leaderboard = [];
+                // Apply new session data
                 this.roomCode = roomCode;
                 this.participantId = res.data.participantId;
+                this.participantNickname = res.data.nickname;
             });
             return true;
         } catch {
@@ -267,6 +324,27 @@ export class SessionStore {
         }
     }
 
+    async refreshParticipants(): Promise<void> {
+        const code = this.roomCode;
+        if (!code) {
+            return;
+        }
+        try {
+            const res = await getLeaderboard(code);
+            runInAction(() => {
+                this.participants = res.data.map((e) => ({
+                    id: e.participantId,
+                    name: e.nickname,
+                    score: e.score ?? 0,
+                    answers: {},
+                    joinedAt: '',
+                }));
+            });
+        } catch {
+            // ignore on error
+        }
+    }
+
     async fetchLeaderboard(roomCodeOverride?: string): Promise<void> {
         const code = roomCodeOverride ?? this.roomCode;
         if (!code) {
@@ -288,11 +366,13 @@ export class SessionStore {
         this.disconnect();
         this.roomCode = null;
         this.participantId = null;
+        this.participantNickname = null;
         this.currentQuestion = null;
         this.currentQuestionIndex = 0;
         this.totalQuestions = 0;
         this.timeLeft = 0;
         this.status = 'waiting';
+        this.wsConnected = false;
         this.participants = [];
         this.answerStats = {};
         this.participantAnswered = {};

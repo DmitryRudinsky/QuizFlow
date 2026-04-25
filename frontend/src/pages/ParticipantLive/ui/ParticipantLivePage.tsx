@@ -82,8 +82,16 @@ export const ParticipantLivePage = observer(() => {
             <div className={styles.waitingPage}>
                 <Card className={styles.waitingCard}>
                     <Loader2 className={`${styles.waitingSpinner} ${styles.spin}`} />
+                    {session.participantNickname && (
+                        <div className={styles.waitingNickname}>{session.participantNickname}</div>
+                    )}
                     <h2 className={styles.waitingTitle}>{t('participantLive.waiting')}</h2>
                     <p className={styles.waitingSubtitle}>{t('participantLive.waitingHint')}</p>
+                    {roomCode && (
+                        <div className={styles.waitingRoomCode}>
+                            {t('participantLive.room', { code: roomCode })}
+                        </div>
+                    )}
                 </Card>
             </div>
         );

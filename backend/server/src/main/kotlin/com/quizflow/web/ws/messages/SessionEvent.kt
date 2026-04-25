@@ -5,6 +5,7 @@ import java.util.UUID
 enum class EventType {
     QUESTION_STARTED,
     QUESTION_ENDED,
+    ANSWER_SUBMITTED,
     SESSION_PAUSED,
     SESSION_RESUMED,
     SESSION_ENDED,
@@ -28,4 +29,10 @@ data class QuestionPayload(
 data class AnswerOption(
     val id: UUID,
     val text: String,
+)
+
+data class AnswerStatsPayload(
+    val questionId: UUID,
+    val participantId: UUID,
+    val stats: Map<String, Int>,
 )

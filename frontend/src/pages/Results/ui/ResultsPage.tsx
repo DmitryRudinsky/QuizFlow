@@ -18,7 +18,7 @@ export const ResultsPage = observer(() => {
         id: e.participantId,
         name: e.nickname,
         score: e.score,
-        correct: 0,
+        correct: e.correctCount,
         total: session.totalQuestions,
         rank: e.rank ?? index + 1,
     }));

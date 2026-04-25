@@ -78,11 +78,12 @@ fun SessionParticipant.toJoinResponse() = JoinSessionResponse(
     roomCode = session.roomCode,
 )
 
-fun List<SessionParticipant>.toLeaderboard() = mapIndexed { index, participant ->
+fun List<Pair<SessionParticipant, Int>>.toLeaderboard() = mapIndexed { index, (participant, correctCount) ->
     LeaderboardEntryResponse(
         participantId = participant.id!!,
         nickname = participant.nickname,
         score = participant.score,
         rank = index + 1,
+        correctCount = correctCount,
     )
 }
