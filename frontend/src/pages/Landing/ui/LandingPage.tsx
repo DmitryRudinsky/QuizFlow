@@ -1,15 +1,28 @@
+import { useStore } from '@app/providers/useStore';
 import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';
 import { LanguageSwitcher } from '@shared/ui/LanguageSwitcher';
 import { BarChart3, CheckCircle2, Clock, Trophy, Users, Zap } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import styles from './LandingPage.module.scss';
 
 export const LandingPage = observer(() => {
     const { t } = useTranslation();
+    const { user, auth } = useStore();
+    const navigate = useNavigate();
+
+    const dashboardRoute =
+        user.currentUser?.role === 'organizer'
+            ? ROUTES.ORGANIZER_DASHBOARD
+            : ROUTES.PARTICIPANT_ACCOUNT;
+
+    const handleLogout = () => {
+        auth.logout();
+    };
+
     return (
         <div className={styles.page}>
             <header className={styles.header}>
@@ -22,12 +35,25 @@ export const LandingPage = observer(() => {
                     </div>
                     <div className={styles.headerNav}>
                         <LanguageSwitcher />
-                        <Link to={ROUTES.LOGIN}>
-                            <Button variant='ghost'>{t('common.logIn')}</Button>
-                        </Link>
-                        <Link to={ROUTES.SIGNUP}>
-                            <Button>{t('landing.getStarted')}</Button>
-                        </Link>
+                        {user.isAuthenticated ? (
+                            <>
+                                <Button variant='ghost' onClick={() => navigate(dashboardRoute)}>
+                                    {user.currentUser!.name}
+                                </Button>
+                                <Button variant='outline' onClick={handleLogout}>
+                                    {t('common.logOut')}
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Link to={ROUTES.LOGIN}>
+                                    <Button variant='ghost'>{t('common.logIn')}</Button>
+                                </Link>
+                                <Link to={ROUTES.SIGNUP}>
+                                    <Button>{t('landing.getStarted')}</Button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>

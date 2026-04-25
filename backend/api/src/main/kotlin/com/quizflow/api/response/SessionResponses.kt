@@ -32,3 +32,22 @@ data class LeaderboardEntryResponse(
     val rank: Int,
     val correctCount: Int,
 )
+
+data class HostSessionSummary(
+    val id: UUID,
+    val roomCode: String,
+    val quizTitle: String,
+    val participantCount: Int,
+    val avgScore: Int,
+    val createdAt: String,
+    val status: String,
+)
+
+data class ParticipantSessionSummary(
+    val id: UUID,
+    val quizTitle: String,
+    val score: Int,
+    val rank: Int,
+    val participantCount: Int,
+    val createdAt: String,
+)

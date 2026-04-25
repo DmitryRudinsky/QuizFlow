@@ -19,4 +19,12 @@ interface SessionRepository : JpaRepository<Session, UUID> {
     fun findByRoomCodeWithDetails(@Param("roomCode") roomCode: String): Session?
 
     fun findByHostIdAndStatus(hostId: UUID, status: SessionStatus): List<Session>
+
+    @Query(
+        "SELECT DISTINCT s FROM Session s " +
+            "LEFT JOIN FETCH s.participants " +
+            "JOIN FETCH s.quiz " +
+            "WHERE s.host.id = :hostId",
+    )
+    fun findByHostIdWithParticipants(@Param("hostId") hostId: UUID): List<Session>
 }

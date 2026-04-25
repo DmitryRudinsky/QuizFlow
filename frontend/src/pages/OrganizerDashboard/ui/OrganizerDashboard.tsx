@@ -20,7 +20,7 @@ import { Link } from 'react-router';
 import styles from './OrganizerDashboard.module.scss';
 
 export const OrganizerDashboard = observer(() => {
-    const { quiz, user } = useStore();
+    const { quiz, user, session } = useStore();
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -28,9 +28,12 @@ export const OrganizerDashboard = observer(() => {
             () => Boolean(user.currentUser),
             () => {
                 void quiz.fetchByUser();
+                void session.fetchHostedSessions();
             },
         );
-    }, [quiz, user]);
+    }, [quiz, user, session]);
+
+    const totalParticipants = session.hostSessions.reduce((sum, s) => sum + s.participantCount, 0);
 
     return (
         <div className={styles.layout}>
@@ -54,27 +57,15 @@ export const OrganizerDashboard = observer(() => {
                     <div className={styles.statsGrid}>
                         <StatCard
                             title={t('dashboard.totalQuizzes')}
-                            value='24'
-                            change={t('dashboard.thisWeek')}
-                            colorClass={styles.statChangePrimary}
+                            value={String(quiz.quizList.length)}
                         />
                         <StatCard
                             title={t('dashboard.totalParticipants')}
-                            value='1,284'
-                            change={t('dashboard.vsLastWeek')}
-                            colorClass={styles.statChangeTeal}
+                            value={totalParticipants.toLocaleString()}
                         />
                         <StatCard
                             title={t('dashboard.activeSessions')}
-                            value='3'
-                            change={t('dashboard.liveNow')}
-                            colorClass={styles.statChangeSuccess}
-                        />
-                        <StatCard
-                            title={t('dashboard.avgCompletion')}
-                            value='87%'
-                            change={t('dashboard.improvement')}
-                            colorClass={styles.statChangePink}
+                            value={String(session.hostSessions.length)}
                         />
                     </div>
 
@@ -176,24 +167,13 @@ export const OrganizerDashboard = observer(() => {
     );
 });
 
-function StatCard({
-    title,
-    value,
-    change,
-    colorClass,
-}: {
-    title: string;
-    value: string;
-    change: string;
-    colorClass: string;
-}) {
+function StatCard({ title, value }: { title: string; value: string }) {
     return (
         <Card>
             <CardContent className={styles.cardContentPadded}>
                 <div className={styles.statInner}>
                     <p className={styles.statTitle}>{title}</p>
                     <p className={styles.statValue}>{value}</p>
-                    <p className={colorClass}>{change}</p>
                 </div>
             </CardContent>
         </Card>

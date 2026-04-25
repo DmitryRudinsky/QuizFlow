@@ -80,11 +80,11 @@ describe('AuthStore ↔ UserStore integration', () => {
     });
 
     describe('register', () => {
-        it('sets currentUser after registration', async () => {
+        it('sets currentUser after successful registration', async () => {
             vi.mocked(api.register).mockResolvedValue(
                 mockUser('u3', 'new@example.com', 'organizer') as never,
             );
-            await root.auth.register('New', 'new@example.com', 'pass', 'organizer');
+            await root.auth.register('New', 'new@example.com', 'pass!1', 'organizer');
             expect(root.user.currentUser?.email).toBe('new@example.com');
         });
 
@@ -94,9 +94,17 @@ describe('AuthStore ↔ UserStore integration', () => {
                 loadingDuringCall = root.auth.isLoading;
                 return mockUser('u3', 'new@example.com', 'organizer') as never;
             });
-            await root.auth.register('New', 'new@example.com', 'pass', 'organizer');
+            await root.auth.register('New', 'new@example.com', 'pass!1', 'organizer');
             expect(loadingDuringCall).toBe(true);
             expect(root.auth.isLoading).toBe(false);
+        });
+
+        it('sets error on failure', async () => {
+            vi.mocked(api.register).mockRejectedValue(new Error('Email already exists'));
+            await expect(
+                root.auth.register('New', 'existing@example.com', 'pass!1', 'organizer'),
+            ).rejects.toThrow();
+            expect(root.auth.error).toBe('Email already exists');
         });
     });
 

@@ -627,3 +627,56 @@ export const me = async (options?: RequestInit): Promise<meResponse> => {
         method: 'GET',
     });
 };
+
+export interface HostSessionSummary {
+    id: string;
+    roomCode: string;
+    quizTitle: string;
+    participantCount: number;
+    avgScore: number;
+    createdAt: string;
+    status: string;
+}
+
+export interface ParticipantSessionSummary {
+    id: string;
+    quizTitle: string;
+    score: number;
+    rank: number;
+    participantCount: number;
+    createdAt: string;
+}
+
+export type getHostedSessionsResponse200 = {
+    data: HostSessionSummary[];
+    status: 200;
+};
+export type getHostedSessionsResponseSuccess = getHostedSessionsResponse200 & { headers: Headers };
+export type getHostedSessionsResponse = getHostedSessionsResponseSuccess;
+
+export const getHostedSessions = async (
+    options?: RequestInit,
+): Promise<getHostedSessionsResponse> => {
+    return customFetch<getHostedSessionsResponse>(`/api/sessions/hosted`, {
+        ...options,
+        method: 'GET',
+    });
+};
+
+export type getParticipatedSessionsResponse200 = {
+    data: ParticipantSessionSummary[];
+    status: 200;
+};
+export type getParticipatedSessionsResponseSuccess = getParticipatedSessionsResponse200 & {
+    headers: Headers;
+};
+export type getParticipatedSessionsResponse = getParticipatedSessionsResponseSuccess;
+
+export const getParticipatedSessions = async (
+    options?: RequestInit,
+): Promise<getParticipatedSessionsResponse> => {
+    return customFetch<getParticipatedSessionsResponse>(`/api/sessions/participated`, {
+        ...options,
+        method: 'GET',
+    });
+};

@@ -19,38 +19,23 @@ export const SignUpPage = observer(() => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+
     const [selectedRole, setSelectedRole] = useState<UserRole>(
         (searchParams.get('role') as UserRole) || 'participant',
     );
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [passwordError, setPasswordError] = useState<string | null>(null);
-
-    const validatePassword = (value: string): string | null => {
-        if (value.length < 6) {
-            return t('signup.passwordTooShort');
-        }
-        if (!/[!@#$%^&*]/.test(value)) {
-            return t('signup.passwordNoSpecial');
-        }
-        return null;
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const err = validatePassword(password);
-        if (err) {
-            setPasswordError(err);
-            return;
-        }
         try {
             await auth.register(name, email, password, selectedRole);
             navigate(
                 selectedRole === 'organizer' ? ROUTES.ORGANIZER_DASHBOARD : ROUTES.PARTICIPANT_JOIN,
             );
         } catch {
-            // error displayed below
+            // error shown via auth.error
         }
     };
 
@@ -136,15 +121,9 @@ export const SignUpPage = observer(() => {
                                     type='password'
                                     placeholder={t('signup.passwordPlaceholder')}
                                     value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                        setPasswordError(null);
-                                    }}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
-                                {passwordError && (
-                                    <p className={styles.errorText}>{passwordError}</p>
-                                )}
                             </div>
 
                             {auth.error && <p className={styles.errorText}>{auth.error}</p>}

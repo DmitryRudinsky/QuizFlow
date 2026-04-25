@@ -10,8 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate   # Hibernate только проверяет схему, не меняет её сам
-    open-in-view: false    # не держать соединение с БД открытым во время рендеринга ответа
+      ddl-auto: validate
+    open-in-view: false
     show-sql: false
 
   flyway:
