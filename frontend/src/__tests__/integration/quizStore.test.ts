@@ -1,5 +1,11 @@
 import { QuizStore } from '@entities/Quiz/model/quizStore';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@shared/api/generated', () => ({
+    getQuizzesByUser: vi.fn().mockResolvedValue({ data: [] }),
+    getQuiz: vi.fn().mockResolvedValue({ data: {} }),
+    deleteQuiz: vi.fn().mockResolvedValue({ data: undefined }),
+}));
 
 const INITIAL_QUIZ_COUNT = 1;
 
@@ -67,18 +73,18 @@ describe('QuizStore', () => {
     });
 
     describe('deleteQuiz', () => {
-        it('removes the quiz from the list', () => {
-            store.deleteQuiz('1');
+        it('removes the quiz from the list', async () => {
+            await store.deleteQuiz('1');
             expect(store.quizList).toHaveLength(INITIAL_QUIZ_COUNT - 1);
         });
 
-        it('the deleted quiz is no longer retrievable', () => {
-            store.deleteQuiz('1');
+        it('the deleted quiz is no longer retrievable', async () => {
+            await store.deleteQuiz('1');
             expect(store.getById('1')).toBeUndefined();
         });
 
-        it('does nothing for an unknown id', () => {
-            store.deleteQuiz('nonexistent');
+        it('does nothing for an unknown id', async () => {
+            await store.deleteQuiz('nonexistent');
             expect(store.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
         });
     });

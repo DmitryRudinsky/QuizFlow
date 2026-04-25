@@ -9,7 +9,13 @@ import com.quizflow.api.response.LeaderboardEntryResponse
 import com.quizflow.api.response.SessionResponse
 import com.quizflow.domain.User
 import com.quizflow.service.SessionService
+import com.quizflow.web.ws.messages.AnswerOption
+import com.quizflow.web.ws.messages.AnswerStatsPayload
+import com.quizflow.web.ws.messages.EventType
+import com.quizflow.web.ws.messages.QuestionPayload
+import com.quizflow.web.ws.messages.SessionEvent
 import org.springframework.http.HttpStatus
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @Transactional
 class SessionController(
     private val sessionService: SessionService,
+    private val messaging: SimpMessagingTemplate,
 ) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -57,9 +64,23 @@ class SessionController(
         @RequestBody request: SubmitAnswerRequest,
     ): AnswerResultResponse {
         val answer = sessionService.submitAnswer(request.participantId, request.questionId, request.answerIds)
-        val correctAnswerIds = sessionService.getSessionByRoomCode(roomCode).quiz.questions
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
+        val correctAnswerIds = session.quiz.questions
             .find { it.id == request.questionId }!!
             .answers.filter { it.isCorrect }.map { it.id!! }
+
+        val stats = sessionService.getAnswerStats(roomCode, request.questionId)
+        messaging.convertAndSend(
+            "/topic/session/$roomCode",
+            SessionEvent(
+                type = EventType.ANSWER_SUBMITTED,
+                payload = AnswerStatsPayload(
+                    questionId = request.questionId,
+                    participantId = request.participantId,
+                    stats = stats,
+                ),
+            ),
+        )
 
         return AnswerResultResponse(
             isCorrect = answer.isCorrect,
@@ -72,15 +93,54 @@ class SessionController(
     fun nextQuestion(
         @PathVariable roomCode: String,
         @AuthenticationPrincipal user: User,
-    ): SessionResponse = sessionService.nextQuestion(user.id!!, roomCode).toResponse()
+    ): SessionResponse {
+        sessionService.nextQuestion(user.id!!, roomCode)
+
+        // Reload with quiz+questions+answers eagerly fetched to avoid lazy-load issues
+        val session = sessionService.getSessionByRoomCodeWithDetails(roomCode)
+        val questionIndex = session.currentQuestionIndex - 1
+        val questions = session.quiz.questions
+
+        if (questionIndex >= questions.size) {
+            sessionService.endSession(user.id!!, roomCode)
+            messaging.convertAndSend(
+                "/topic/session/$roomCode",
+                SessionEvent(type = EventType.SESSION_ENDED, payload = "Quiz finished"),
+            )
+            return session.toResponse()
+        }
+
+        val question = questions[questionIndex]
+        val payload = QuestionPayload(
+            questionIndex = questionIndex,
+            totalQuestions = questions.size,
+            questionId = question.id!!,
+            questionText = question.questionText,
+            answers = question.answers.map { AnswerOption(id = it.id!!, text = it.text) },
+            timeLimit = question.timeLimit,
+            points = question.points,
+        )
+        messaging.convertAndSend(
+            "/topic/session/$roomCode",
+            SessionEvent(type = EventType.QUESTION_STARTED, payload = payload),
+        )
+        return session.toResponse()
+    }
 
     @PostMapping("/{roomCode}/end")
     fun endSession(
         @PathVariable roomCode: String,
         @AuthenticationPrincipal user: User,
-    ): SessionResponse = sessionService.endSession(user.id!!, roomCode).toResponse()
+    ): SessionResponse {
+        val session = sessionService.endSession(user.id!!, roomCode)
+        messaging.convertAndSend(
+            "/topic/session/$roomCode",
+            SessionEvent(type = EventType.SESSION_ENDED, payload = "Session ended by host"),
+        )
+        return session.toResponse()
+    }
 
     @GetMapping("/{roomCode}/leaderboard")
     fun getLeaderboard(@PathVariable roomCode: String): List<LeaderboardEntryResponse> =
-        sessionService.getLeaderboard(roomCode).toLeaderboard()
+        sessionService.getLeaderboardWithCounts(roomCode).toLeaderboard()
 }

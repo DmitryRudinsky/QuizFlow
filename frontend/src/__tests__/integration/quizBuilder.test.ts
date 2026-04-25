@@ -1,6 +1,27 @@
 import { RootStore } from '@app/model/rootStore';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const { CREATED_QUIZ_DETAIL, FIXTURE_QUIZ_DETAIL } = vi.hoisted(() => ({
+    CREATED_QUIZ_DETAIL: {
+        id: 'srv-new-id',
+        title: 'My Quiz',
+        description: '',
+        category: '',
+        createdBy: 'user-1',
+        createdAt: '2026-01-01T00:00:00Z',
+        questions: [],
+    },
+    FIXTURE_QUIZ_DETAIL: {
+        id: '1',
+        title: 'JavaScript Fundamentals',
+        description: 'Test your knowledge of JavaScript core concepts',
+        category: 'programming',
+        createdBy: 'organizer-1',
+        createdAt: '2026-04-08T10:00:00Z',
+        questions: [],
+    },
+}));
+
 vi.mock('@shared/api/generated', () => ({
     login: vi.fn().mockResolvedValue({
         data: { id: 'user-1', name: 'alice', email: 'alice@example.com', role: 'organizer' },
@@ -9,10 +30,27 @@ vi.mock('@shared/api/generated', () => ({
     }),
     register: vi.fn(),
     getQuizzesByUser: vi.fn(),
-    getQuiz: vi.fn(),
-    createQuiz: vi.fn(),
-    updateQuiz: vi.fn(),
-    deleteQuiz: vi.fn(),
+    getQuiz: vi.fn().mockImplementation(async (id: string) => ({
+        data: id === 'srv-new-id' ? CREATED_QUIZ_DETAIL : FIXTURE_QUIZ_DETAIL,
+        status: 200,
+        headers: new Headers(),
+    })),
+    createQuiz: vi.fn().mockResolvedValue({
+        data: CREATED_QUIZ_DETAIL,
+        status: 201,
+        headers: new Headers(),
+    }),
+    updateQuiz: vi.fn().mockResolvedValue({
+        data: FIXTURE_QUIZ_DETAIL,
+        status: 200,
+        headers: new Headers(),
+    }),
+    deleteQuiz: vi.fn().mockResolvedValue({ status: 204, headers: new Headers() }),
+    addQuestion: vi.fn().mockResolvedValue({
+        data: FIXTURE_QUIZ_DETAIL,
+        status: 201,
+        headers: new Headers(),
+    }),
 }));
 
 const INITIAL_QUIZ_COUNT = 1;
@@ -45,47 +83,53 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
     beforeEach(() => {
         root = new RootStore();
         root.quiz.addQuiz(FIXTURE_QUIZ);
+        vi.clearAllMocks();
     });
 
     describe('save — new quiz', () => {
-        it('returns true when title and questions are present', () => {
+        it('returns true when title and questions are present', async () => {
             buildValidQuiz(root);
-            expect(root.quizBuilder.save()).toBe(true);
+            expect(await root.quizBuilder.save()).toBe(true);
         });
 
-        it('adds quiz to quizStore', () => {
+        it('calls createQuiz with correct title', async () => {
+            const { createQuiz } = await import('@shared/api/generated');
             buildValidQuiz(root);
-            root.quizBuilder.save();
+            await root.quizBuilder.save();
+            expect(vi.mocked(createQuiz)).toHaveBeenCalledWith(
+                expect.objectContaining({ title: 'My Quiz' }),
+            );
+        });
+
+        it('calls addQuestion for each new question', async () => {
+            const { addQuestion } = await import('@shared/api/generated');
+            buildValidQuiz(root);
+            root.quizBuilder.addQuestion();
+            await root.quizBuilder.save();
+            expect(vi.mocked(addQuestion)).toHaveBeenCalledTimes(2);
+        });
+
+        it('adds the new quiz to the store after save', async () => {
+            buildValidQuiz(root);
+            await root.quizBuilder.save();
             expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT + 1);
         });
 
-        it('prepends new quiz to the list', () => {
-            buildValidQuiz(root);
-            root.quizBuilder.save();
-            expect(root.quiz.quizList[0].title).toBe('My Quiz');
-        });
-
-        it('returns false without title', () => {
+        it('returns false without title', async () => {
             root.quizBuilder.addQuestion();
-            expect(root.quizBuilder.save()).toBe(false);
+            expect(await root.quizBuilder.save()).toBe(false);
         });
 
-        it('returns false without questions', () => {
+        it('returns false without questions', async () => {
             root.quizBuilder.setTitle('My Quiz');
-            expect(root.quizBuilder.save()).toBe(false);
+            expect(await root.quizBuilder.save()).toBe(false);
         });
 
-        it('does not add quiz to store when validation fails', () => {
+        it('does not call API when validation fails', async () => {
+            const { createQuiz } = await import('@shared/api/generated');
             root.quizBuilder.setTitle('My Quiz');
-            root.quizBuilder.save();
-            expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
-        });
-
-        it('sets createdBy from logged-in user', async () => {
-            await root.auth.login('alice@example.com', 'pass');
-            buildValidQuiz(root);
-            root.quizBuilder.save();
-            expect(root.quiz.quizList[0].createdBy).toBe(root.user.currentUser?.id);
+            await root.quizBuilder.save();
+            expect(vi.mocked(createQuiz)).not.toHaveBeenCalled();
         });
     });
 
@@ -103,20 +147,58 @@ describe('QuizBuilderStore ↔ QuizStore integration', () => {
             expect(root.quizBuilder.quizTitle).toBe('');
         });
 
-        it('updates quiz in quizStore after save', () => {
-            root.quizBuilder.loadForEdit('1');
-            root.quizBuilder.setTitle('Updated Title');
-            root.quizBuilder.addQuestion(); // mock quizzes have no questions — need at least one
-            root.quizBuilder.save();
-            expect(root.quiz.getById('1')?.title).toBe('Updated Title');
-        });
-
-        it('does not add a new quiz when updating', () => {
+        it('calls updateQuiz with the new title when saving', async () => {
+            const { updateQuiz } = await import('@shared/api/generated');
             root.quizBuilder.loadForEdit('1');
             root.quizBuilder.setTitle('Updated Title');
             root.quizBuilder.addQuestion();
-            root.quizBuilder.save();
+            await root.quizBuilder.save();
+            expect(vi.mocked(updateQuiz)).toHaveBeenCalledWith(
+                '1',
+                expect.objectContaining({ title: 'Updated Title' }),
+            );
+        });
+
+        it('does not call createQuiz when updating', async () => {
+            const { createQuiz } = await import('@shared/api/generated');
+            root.quizBuilder.loadForEdit('1');
+            root.quizBuilder.setTitle('Updated Title');
+            root.quizBuilder.addQuestion();
+            await root.quizBuilder.save();
+            expect(vi.mocked(createQuiz)).not.toHaveBeenCalled();
+        });
+
+        it('does not add a new quiz entry when updating', async () => {
+            root.quizBuilder.loadForEdit('1');
+            root.quizBuilder.setTitle('Updated Title');
+            root.quizBuilder.addQuestion();
+            await root.quizBuilder.save();
             expect(root.quiz.quizList).toHaveLength(INITIAL_QUIZ_COUNT);
+        });
+
+        it('only sends new questions (without UUID ids) to addQuestion', async () => {
+            const { addQuestion } = await import('@shared/api/generated');
+            // Simulate quiz with one existing question (UUID id)
+            root.quiz.updateQuiz('1', {
+                questions: [
+                    {
+                        id: '00000000-0000-0000-0000-000000000001',
+                        type: 'text',
+                        questionText: 'Existing question',
+                        answerType: 'single',
+                        answers: [
+                            { id: 'a1', text: 'A', isCorrect: true },
+                            { id: 'a2', text: 'B', isCorrect: false },
+                        ],
+                        timeLimit: 30,
+                        points: 100,
+                    },
+                ],
+            });
+            root.quizBuilder.loadForEdit('1');
+            root.quizBuilder.addQuestion(); // new question with timestamp id
+            await root.quizBuilder.save();
+            expect(vi.mocked(addQuestion)).toHaveBeenCalledTimes(1);
         });
     });
 

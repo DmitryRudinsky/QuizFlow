@@ -1,3 +1,4 @@
+import { useStore } from '@app/providers/useStore';
 import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';
@@ -13,12 +14,13 @@ import styles from './JoinForm.module.scss';
 
 export const JoinForm = observer(() => {
     const navigate = useNavigate();
+    const { session } = useStore();
     const { t } = useTranslation();
     const [roomCode, setRoomCode] = useState('');
     const [nickname, setNickname] = useState('');
     const [isJoining, setIsJoining] = useState(false);
 
-    const handleJoin = (e: React.FormEvent) => {
+    const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!roomCode || !nickname) {
             toast.error(t('joinForm.errorBoth'));
@@ -29,9 +31,16 @@ export const JoinForm = observer(() => {
             return;
         }
         setIsJoining(true);
-        setTimeout(() => {
+        try {
+            const success = await session.joinSession(roomCode, nickname);
+            if (!success) {
+                toast.error('Failed to join session. Check the room code and try again.');
+                return;
+            }
             navigate(ROUTES.PARTICIPANT_LIVE(roomCode));
-        }, 1000);
+        } finally {
+            setIsJoining(false);
+        }
     };
 
     return (

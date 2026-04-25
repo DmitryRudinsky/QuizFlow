@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { mockAuthApi, mockQuizApi } from './helpers/mockApi';
+import { mockAuthApi, mockQuizApi, mockSessionApi, mockStompWebSocket } from './helpers/mockApi';
 
 // Kill all CSS transitions/animations so screenshots are pixel-stable
 async function disableAnimations(page: Page) {
@@ -89,7 +89,10 @@ test.describe('Visual regression — participant pages', () => {
     });
 
     test('participant-live', async ({ page }) => {
+        await mockStompWebSocket(page);
+        await mockSessionApi(page, 'ABC-123');
         await page.goto('/quiz/ABC-123/live');
+        await page.waitForSelector('button:has-text("Submit Answer")', { timeout: 5000 });
         await disableAnimations(page);
         await page.addStyleTag({
             content: '[data-testid="countdown-timer"] { visibility: hidden; }',
@@ -98,7 +101,9 @@ test.describe('Visual regression — participant pages', () => {
     });
 
     test('results', async ({ page }) => {
+        await mockSessionApi(page, 'ABC-123');
         await page.goto('/quiz/ABC-123/results');
+        await page.waitForSelector('text=1st', { timeout: 5000 });
         await disableAnimations(page);
         await page.evaluate(() => document.querySelectorAll('canvas').forEach((c) => c.remove()));
         await expect(page).toHaveScreenshot('results.png');
@@ -125,7 +130,13 @@ test.describe('Visual regression — organizer pages', () => {
     });
 
     test('quiz-builder-edit', async ({ page }) => {
+        await mockQuizApi(page);
         await page.goto('/organizer/quiz/1/edit');
+        // Wait for quiz to load and title to populate
+        await page.waitForFunction(
+            () => (document.querySelector('#title') as HTMLInputElement)?.value !== '',
+            { timeout: 5000 },
+        );
         await disableAnimations(page);
         await expect(page).toHaveScreenshot('quiz-builder-edit.png');
     });
@@ -137,7 +148,10 @@ test.describe('Visual regression — organizer pages', () => {
     });
 
     test('live-host', async ({ page }) => {
-        await page.goto('/organizer/quiz/1/live');
+        await mockStompWebSocket(page);
+        await mockSessionApi(page, 'ABC-123');
+        await page.goto('/organizer/quiz/ABC-123/live');
+        await page.waitForSelector('text=Pause', { timeout: 5000 });
         await disableAnimations(page);
         await page.addStyleTag({
             content: '[data-testid="countdown-timer"] { visibility: hidden; }',

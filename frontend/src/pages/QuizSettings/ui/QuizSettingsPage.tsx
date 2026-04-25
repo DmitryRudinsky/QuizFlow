@@ -8,19 +8,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@shared/ui/Switch';
 import { ArrowLeft, Play } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 
 import styles from './QuizSettingsPage.module.scss';
 
 export const QuizSettingsPage = observer(() => {
     const navigate = useNavigate();
     const { id: quizId } = useParams();
-    const { quizBuilder } = useStore();
+    const { quizBuilder, session } = useStore();
     const { t } = useTranslation();
     const { settings } = quizBuilder;
+    const [isStarting, setIsStarting] = useState(false);
 
-    const handleStartQuiz = () => {
-        navigate(ROUTES.ORGANIZER_QUIZ_LIVE(quizId || 'new'));
+    const handleStartQuiz = async () => {
+        if (!quizId) {
+            return;
+        }
+        setIsStarting(true);
+        try {
+            const roomCode = await session.createSession(quizId);
+            if (!roomCode) {
+                toast.error('Failed to create session');
+                return;
+            }
+            await session.startSession();
+            navigate(ROUTES.ORGANIZER_QUIZ_LIVE(roomCode));
+        } finally {
+            setIsStarting(false);
+        }
     };
 
     return (
@@ -38,7 +55,7 @@ export const QuizSettingsPage = observer(() => {
                             <p className={styles.headerSubtitle}>{t('quizSettings.subtitle')}</p>
                         </div>
                     </div>
-                    <Button onClick={handleStartQuiz}>
+                    <Button onClick={handleStartQuiz} disabled={isStarting}>
                         <Play />
                         {t('quizSettings.startSession')}
                     </Button>

@@ -1,3 +1,5 @@
+import { useStore } from '@app/providers/useStore';
+import { ROUTES } from '@shared/config/routes';
 import { useTranslation } from '@shared/lib/useTranslation';
 import { Button } from '@shared/ui/Button';
 import { Card } from '@shared/ui/Card';
@@ -5,51 +7,52 @@ import { CountdownTimer } from '@widgets/CountdownTimer/ui/CountdownTimer';
 import { Check, Clock, Loader2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import styles from './ParticipantLivePage.module.scss';
-
-const mockQuestion = {
-    id: '1',
-    questionText: 'What is the output of: console.log(typeof null)?',
-    answers: [
-        { id: 'a1', text: 'null' },
-        { id: 'a2', text: 'object' },
-        { id: 'a3', text: 'undefined' },
-        { id: 'a4', text: 'number' },
-    ],
-    timeLimit: 30,
-    correctAnswerId: 'a2',
-};
 
 type AnswerState = 'default' | 'selected' | 'submitted' | 'correct' | 'incorrect' | 'expired';
 
 export const ParticipantLivePage = observer(() => {
     const { roomCode } = useParams();
+    const { session } = useStore();
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
     const [answerState, setAnswerState] = useState<AnswerState>('default');
-    const [timeLeft, setTimeLeft] = useState(mockQuestion.timeLimit);
-    const [currentQuestion] = useState(1);
-    const [totalQuestions] = useState(15);
+    const [lastPoints, setLastPoints] = useState(0);
     const [isWaiting, setIsWaiting] = useState(false);
 
     useEffect(() => {
-        if (answerState === 'default' || answerState === 'selected') {
-            if (timeLeft > 0) {
-                const timer = setInterval(() => {
-                    setTimeLeft((prev) => {
-                        if (prev <= 1) {
-                            setAnswerState('expired');
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }, 1000);
-                return () => clearInterval(timer);
-            }
+        if (roomCode) {
+            session.connect(roomCode);
         }
-    }, [timeLeft, answerState]);
+        return () => {
+            session.stopTimer();
+        };
+    }, [session, roomCode]);
+
+    // Navigate to results when session ends
+    useEffect(() => {
+        if (session.status === 'ended' && roomCode) {
+            navigate(ROUTES.PARTICIPANT_RESULTS(roomCode));
+        }
+    }, [session.status, roomCode, navigate]);
+
+    // Reset answer state when a new question arrives
+    const currentQuestion = session.currentQuestion;
+    useEffect(() => {
+        setSelectedAnswers([]);
+        setAnswerState('default');
+        setIsWaiting(false);
+    }, [currentQuestion?.id]);
+
+    // Sync timeLeft expiry — only when a question is active
+    useEffect(() => {
+        if (currentQuestion && session.timeLeft <= 0 && answerState === 'default') {
+            setAnswerState('expired');
+        }
+    }, [session.timeLeft, answerState, currentQuestion]);
 
     const handleAnswerClick = (answerId: string) => {
         if (answerState === 'submitted' || answerState === 'expired') {
@@ -59,17 +62,40 @@ export const ParticipantLivePage = observer(() => {
         setAnswerState('selected');
     };
 
-    const handleSubmit = () => {
-        if (selectedAnswers.length === 0) {
+    const handleSubmit = async () => {
+        if (selectedAnswers.length === 0 || !currentQuestion) {
             return;
         }
         setAnswerState('submitted');
-        setTimeout(() => {
-            const isCorrect = selectedAnswers.includes(mockQuestion.correctAnswerId);
-            setAnswerState(isCorrect ? 'correct' : 'incorrect');
-            setTimeout(() => setIsWaiting(true), 2000);
-        }, 500);
+        const result = await session.submitAnswer(currentQuestion.id, selectedAnswers);
+        if (result) {
+            setLastPoints(result.pointsEarned);
+            setAnswerState(result.isCorrect ? 'correct' : 'incorrect');
+        } else {
+            setAnswerState('incorrect');
+        }
+        setTimeout(() => setIsWaiting(true), 2000);
     };
+
+    if (!currentQuestion || session.status === 'waiting') {
+        return (
+            <div className={styles.waitingPage}>
+                <Card className={styles.waitingCard}>
+                    <Loader2 className={`${styles.waitingSpinner} ${styles.spin}`} />
+                    {session.participantNickname && (
+                        <div className={styles.waitingNickname}>{session.participantNickname}</div>
+                    )}
+                    <h2 className={styles.waitingTitle}>{t('participantLive.waiting')}</h2>
+                    <p className={styles.waitingSubtitle}>{t('participantLive.waitingHint')}</p>
+                    {roomCode && (
+                        <div className={styles.waitingRoomCode}>
+                            {t('participantLive.room', { code: roomCode })}
+                        </div>
+                    )}
+                </Card>
+            </div>
+        );
+    }
 
     if (isWaiting) {
         return (
@@ -83,7 +109,7 @@ export const ParticipantLivePage = observer(() => {
                             {t('participantLive.progress')}
                         </div>
                         <div className={styles.waitingProgressValue}>
-                            {currentQuestion} / {totalQuestions}
+                            {session.currentQuestionIndex + 1} / {session.totalQuestions}
                         </div>
                     </div>
                 </Card>
@@ -103,14 +129,14 @@ export const ParticipantLivePage = observer(() => {
                         </div>
                         <div className={styles.headerQuestion}>
                             {t('participantLive.questionOf', {
-                                current: currentQuestion,
-                                total: totalQuestions,
+                                current: session.currentQuestionIndex + 1,
+                                total: session.totalQuestions,
                             })}
                         </div>
                     </div>
                     <CountdownTimer
-                        timeLeft={timeLeft}
-                        totalTime={mockQuestion.timeLimit}
+                        timeLeft={session.timeLeft}
+                        totalTime={currentQuestion.timeLimit}
                         size='small'
                     />
                 </div>
@@ -121,20 +147,21 @@ export const ParticipantLivePage = observer(() => {
                     <Card className={styles.questionCard}>
                         <div className={styles.questionPad}>
                             <div className={styles.questionLabel}>
-                                {t('participantLive.question', { current: currentQuestion })}
+                                {t('participantLive.question', {
+                                    current: session.currentQuestionIndex + 1,
+                                })}
                             </div>
-                            <h2 className={styles.questionText}>{mockQuestion.questionText}</h2>
+                            <h2 className={styles.questionText}>{currentQuestion.questionText}</h2>
 
                             <div className={styles.answersGrid}>
-                                {mockQuestion.answers.map((answer) => {
+                                {currentQuestion.answers.map((answer) => {
                                     const isSelected = selectedAnswers.includes(answer.id);
-                                    const isCorrect = answer.id === mockQuestion.correctAnswerId;
 
                                     let buttonClass = styles.answerButton;
                                     if (showResult) {
-                                        if (isCorrect) {
+                                        if (isSelected && answerState === 'correct') {
                                             buttonClass = `${styles.answerButton} ${styles.answerButtonCorrect}`;
-                                        } else if (isSelected && !isCorrect) {
+                                        } else if (isSelected && answerState === 'incorrect') {
                                             buttonClass = `${styles.answerButton} ${styles.answerButtonIncorrect}`;
                                         }
                                     } else if (isSelected) {
@@ -158,14 +185,16 @@ export const ParticipantLivePage = observer(() => {
                                                 <span className={styles.answerText}>
                                                     {answer.text}
                                                 </span>
-                                                {showResult && isCorrect && (
-                                                    <Check className={styles.answerCheckIcon} />
-                                                )}
                                                 {isSelected && !showResult && (
                                                     <div className={styles.answerSelectedDot}>
                                                         <Check />
                                                     </div>
                                                 )}
+                                                {showResult &&
+                                                    isSelected &&
+                                                    answerState === 'correct' && (
+                                                        <Check className={styles.answerCheckIcon} />
+                                                    )}
                                             </div>
                                         </button>
                                     );
@@ -200,7 +229,7 @@ export const ParticipantLivePage = observer(() => {
                                 <div className={styles.correctBox}>
                                     <Check className={styles.correctIcon} />
                                     <p className={styles.correctText}>
-                                        {t('participantLive.correct', { points: 100 })}
+                                        {t('participantLive.correct', { points: lastPoints })}
                                     </p>
                                 </div>
                             )}

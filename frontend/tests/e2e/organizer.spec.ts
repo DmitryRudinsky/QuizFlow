@@ -1,6 +1,12 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { mockAuthApi, mockQuizApi } from './helpers/mockApi';
+import {
+    mockAuthApi,
+    mockQuizApi,
+    mockSessionApi,
+    mockStompWebSocket,
+    QUESTION_STARTED_FIXTURE,
+} from './helpers/mockApi';
 
 async function loginAsOrganizer(page: Page) {
     await mockAuthApi(page);
@@ -62,6 +68,7 @@ test.describe('Organizer flows', () => {
 
     test.describe('Quiz Builder — create', () => {
         test.beforeEach(async ({ page }) => {
+            await mockQuizApi(page);
             await page.goto('/organizer/quiz/new');
         });
 
@@ -111,6 +118,7 @@ test.describe('Organizer flows', () => {
         });
 
         test('"Settings" button navigates to quiz settings', async ({ page }) => {
+            await mockQuizApi(page);
             await page.goto('/organizer/quiz/1/edit');
             await page.getByRole('button', { name: 'Settings' }).click();
             await expect(page).toHaveURL(/\/organizer\/quiz\/1\/settings/);
@@ -119,6 +127,7 @@ test.describe('Organizer flows', () => {
 
     test.describe('Quiz Settings', () => {
         test.beforeEach(async ({ page }) => {
+            await mockSessionApi(page, 'ABC-123');
             await page.goto('/organizer/quiz/1/settings');
         });
 
@@ -144,22 +153,54 @@ test.describe('Organizer flows', () => {
 
         test('"Start Quiz Session" navigates to live page', async ({ page }) => {
             await page.getByRole('button', { name: 'Start Quiz Session' }).click();
-            await expect(page).toHaveURL(/\/organizer\/quiz\/1\/live/);
+            await expect(page).toHaveURL(/\/organizer\/quiz\/ABC-123\/live/);
         });
     });
 
     test.describe('Live Host', () => {
         test.beforeEach(async ({ page }) => {
-            await page.goto('/organizer/quiz/1/live');
+            const { sendEvent } = await mockStompWebSocket(page);
+            await mockSessionApi(page, 'ABC-123');
+
+            // When host clicks "Next Question", broadcast next QUESTION_STARTED
+            await page.route('**/api/sessions/*/next', async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({}),
+                });
+                setTimeout(
+                    () =>
+                        sendEvent('QUESTION_STARTED', {
+                            ...QUESTION_STARTED_FIXTURE,
+                            questionIndex: 1,
+                            questionText: 'Second question text',
+                        }),
+                    50,
+                );
+            });
+
+            // When host clicks "End Quiz", broadcast SESSION_ENDED
+            await page.route('**/api/sessions/*/end', async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({}),
+                });
+                setTimeout(() => sendEvent('SESSION_ENDED', 'ended'), 50);
+            });
+
+            await page.goto('/organizer/quiz/ABC-123/live');
+            // Wait for WS to deliver QUESTION_STARTED and the active question view to appear
+            await page.waitForSelector('text=Pause', { timeout: 5000 });
         });
 
         test('shows room code', async ({ page }) => {
             await expect(page.getByText('ABC-123')).toBeVisible();
         });
 
-        test('shows participant count', async ({ page }) => {
-            // Responses box shows "Responses: 6 / 8" (6 of 8 answered per mock data)
-            await expect(page.getByText(/Responses: 6 \/ 8/)).toBeVisible();
+        test('shows responses section', async ({ page }) => {
+            await expect(page.getByText(/Responses:/)).toBeVisible();
         });
 
         test('shows "Question 1 of 15"', async ({ page }) => {
@@ -184,7 +225,6 @@ test.describe('Organizer flows', () => {
 
         test('"End Quiz" navigates to results page', async ({ page }) => {
             await page.getByRole('button', { name: 'End Quiz' }).click();
-            // quizId=1 from URL param → navigates to /quiz/1/results
             await expect(page).toHaveURL(/\/quiz\/.*\/results/);
         });
     });

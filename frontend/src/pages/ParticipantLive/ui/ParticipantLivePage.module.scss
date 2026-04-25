@@ -293,3 +293,19 @@
     font-weight: var(--font-weight-medium);
     color: var(--destructive);
 }
+
+.waitingNickname {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.waitingRoomCode {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    background: var(--muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: calc(var(--radius) - 2px);
+}

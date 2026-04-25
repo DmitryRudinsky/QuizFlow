@@ -163,8 +163,35 @@ class SessionService(
             .sortedByDescending { it.score }
     }
 
+    fun getLeaderboardWithCounts(roomCode: String): List<Pair<SessionParticipant, Int>> {
+        return getLeaderboard(roomCode).map { p ->
+            p to participantAnswerRepository.countByParticipantIdAndIsCorrectTrue(p.id!!).toInt()
+        }
+    }
+
+    fun getAnswerStats(roomCode: String, questionId: UUID): Map<String, Int> {
+        val session = getSessionByRoomCode(roomCode)
+        val answers = participantAnswerRepository
+            .findByQuestionIdAndParticipantSessionId(questionId, session.id!!)
+        val total = answers.size
+        if (total == 0) return emptyMap()
+        val counts = mutableMapOf<String, Int>()
+        for (a in answers) {
+            for (answerId in a.answerIds) {
+                val key = answerId.toString()
+                counts[key] = (counts[key] ?: 0) + 1
+            }
+        }
+        return counts.mapValues { (_, count) -> (count * 100) / total }
+    }
+
     fun getSessionByRoomCode(roomCode: String): Session {
         return sessionRepository.findByRoomCode(roomCode)
+            ?: throw NotFoundException("Session", roomCode)
+    }
+
+    fun getSessionByRoomCodeWithDetails(roomCode: String): Session {
+        return sessionRepository.findByRoomCodeWithDetails(roomCode)
             ?: throw NotFoundException("Session", roomCode)
     }
 

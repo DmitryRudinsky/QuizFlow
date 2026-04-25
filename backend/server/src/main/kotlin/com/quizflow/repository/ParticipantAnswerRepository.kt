@@ -7,4 +7,6 @@ import java.util.UUID
 interface ParticipantAnswerRepository : JpaRepository<ParticipantAnswer, UUID> {
     fun findByParticipantId(participantId: UUID): List<ParticipantAnswer>
     fun existsByParticipantIdAndQuestionId(participantId: UUID, questionId: UUID): Boolean
+    fun findByQuestionIdAndParticipantSessionId(questionId: UUID, sessionId: UUID): List<ParticipantAnswer>
+    fun countByParticipantIdAndIsCorrectTrue(participantId: UUID): Long
 }

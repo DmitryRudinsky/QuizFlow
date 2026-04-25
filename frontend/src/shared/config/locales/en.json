@@ -189,7 +189,8 @@
         "timeLimit": "Time Limit (seconds)",
         "points": "Points",
         "selectQuestion": "Select a question to edit",
-        "selectQuestionHint": "or create a new one"
+        "selectQuestionHint": "or create a new one",
+        "editCorrectAnswersWarning": "Correct answers cannot be loaded from the server. Please re-select the correct answers for each question before saving."
     },
     "quizSettings": {
         "title": "Quiz Settings",
@@ -237,7 +238,13 @@
         "resume": "Resume",
         "pause": "Pause",
         "nextQuestion": "Next Question",
-        "showResults": "Show Results"
+        "showResults": "Show Results",
+        "startQuiz": "Start Quiz",
+        "connecting": "Connecting...",
+        "lobbyJoinAt": "Join at",
+        "lobbyEnterCode": "Enter code",
+        "lobbyParticipants": "Participants ({count})",
+        "lobbyWaiting": "No one has joined yet..."
     },
     "organizerAccount": {
         "title": "Account",

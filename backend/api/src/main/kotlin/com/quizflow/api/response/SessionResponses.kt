@@ -30,4 +30,5 @@ data class LeaderboardEntryResponse(
     val nickname: String,
     val score: Int,
     val rank: Int,
+    val correctCount: Int,
 )

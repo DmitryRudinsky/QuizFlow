@@ -95,7 +95,7 @@ export const OrganizerQuizzesPage = observer(() => {
                                                     <DropdownMenuContent align='end'>
                                                         <DropdownMenuItem asChild>
                                                             <Link
-                                                                to={ROUTES.ORGANIZER_QUIZ_LIVE(
+                                                                to={ROUTES.ORGANIZER_QUIZ_SETTINGS(
                                                                     q.id,
                                                                 )}
                                                             >
